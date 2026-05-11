@@ -4,15 +4,28 @@ import { User, CreditCard, Globe, Settings, Bell, ChevronRight, LogOut, Smartpho
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
+import { signOutUser } from '../utils/firebaseAuth';
 
 export default function Profile() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  const handleSignOut = () => {
-    dispatch(logout());
-    navigate('/login');
+  /**
+   * Handle user logout
+   * Signs out from Firebase and clears Redux state
+   */
+  const handleSignOut = async () => {
+    try {
+      // Sign out from Firebase
+      await signOutUser();
+    } catch (error) {
+      console.error('Error signing out from Firebase:', error);
+    } finally {
+      // Always clear Redux state even if Firebase signout fails
+      dispatch(logout());
+      navigate('/login');
+    }
   };
 
   return (

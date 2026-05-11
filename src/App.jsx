@@ -11,6 +11,9 @@ import { store } from './store/store';
 import queryClient from './api/queryClient';
 import { setupInterceptors } from './api/interceptors';
 
+// Hooks
+import { useInitializeAuth } from './hooks/useInitializeAuth';
+
 // Components
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -26,8 +29,15 @@ import History from './pages/History'
 // Initialize Interceptors
 setupInterceptors(store);
 
+/**
+ * App Content Component
+ * Handles route rendering and splash screen
+ */
 function AppContent() {
   const [loading, setLoading] = useState(true);
+  
+  // Initialize Firebase authentication state on app load
+  useInitializeAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2500);
