@@ -24,8 +24,7 @@ export const useVerifyOTP = () => {
   const dispatch = useDispatch();
 
   return useMutation({
-    mutationFn: ({ confirmationResult, otp }) =>
-      authService.verifyOTP(confirmationResult, otp),
+    mutationFn: (accessToken) => authService.verifyOTP(accessToken),
     onSuccess: (data) => {
       if (data.status === 'success') {
         // Store user data and token in Redux and localStorage
