@@ -1,32 +1,56 @@
 import { useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ShoppingBag, Loader2 } from 'lucide-react';
-import { useSendOTP, useVerifyOTP } from '../queries/authQueries';
+import {
+  useCheckPhone,
+  useCompleteRegistration,
+  useSendOTP,
+  useVerifyOTP,
+} from '../queries/authQueries';
 
 export default function Login() {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [authStep, setAuthStep] = useState('phone');
+  const [registrationToken, setRegistrationToken] = useState('');
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: {
+      name: '',
+      phoneNumber: '',
+      otp: '',
+    },
+  });
 
   const navigate = useNavigate();
+  const checkPhoneMutation = useCheckPhone();
   const sendOTPMutation = useSendOTP();
   const verifyOTPMutation = useVerifyOTP();
-  const loading = sendOTPMutation.isPending || verifyOTPMutation.isPending;
+  const completeRegistrationMutation = useCompleteRegistration();
+  const loading =
+    checkPhoneMutation.isPending ||
+    sendOTPMutation.isPending ||
+    verifyOTPMutation.isPending ||
+    completeRegistrationMutation.isPending;
+  const showOtpInput = authStep === 'otp' || authStep === 'name';
+  const showNameInput = authStep === 'name';
+  const phoneNumber = useWatch({ control, name: 'phoneNumber' }) || '';
+  const otp = useWatch({ control, name: 'otp' }) || '';
+  const name = useWatch({ control, name: 'name' }) || '';
 
-  const handleSendOTP = async (e) => {
-    if (e) e.preventDefault();
-
-    if (phoneNumber.length !== 10) {
-      alert('Please enter a valid 10-digit phone number');
-      return;
-    }
-
+  const handleCheckAndSendOTP = async ({ phoneNumber }) => {
     try {
+      await checkPhoneMutation.mutateAsync(phoneNumber);
       const data = await sendOTPMutation.mutateAsync(phoneNumber);
 
       if (data.success || data.status === 'success') {
-        setShowOtpInput(true);
+        setAuthStep('otp');
         alert('OTP sent successfully');
       }
     } catch (error) {
@@ -39,14 +63,15 @@ export default function Login() {
     }
   };
 
-  const handleVerifyOTP = async () => {
-    if (otp.length !== 6) {
-      alert('Please enter a valid 6-digit OTP');
-      return;
-    }
-
+  const handleVerifyOTP = async ({ phoneNumber, otp }) => {
     try {
       const data = await verifyOTPMutation.mutateAsync({ phoneNumber, otp });
+
+      if (data.requiresRegistration) {
+        setRegistrationToken(data.registrationToken);
+        setAuthStep('name');
+        return;
+      }
 
       if (data.success || data.status === 'success') {
         alert('Login Successful');
@@ -60,6 +85,37 @@ export default function Login() {
           'Invalid OTP'
       );
     }
+  };
+
+  const handleCompleteRegistration = async ({ name }) => {
+    try {
+      const data = await completeRegistrationMutation.mutateAsync({
+        name,
+        registrationToken,
+      });
+
+      if (data.success || data.status === 'success') {
+        alert('Registration Successful');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error?.response?.data?.message ||
+          'Failed to complete registration'
+      );
+    }
+  };
+
+  const onSubmit = (formData) => {
+    if (authStep === 'name') {
+      return handleCompleteRegistration(formData);
+    }
+
+    return authStep === 'otp'
+      ? handleVerifyOTP(formData)
+      : handleCheckAndSendOTP(formData);
   };
 
   return (
@@ -95,7 +151,11 @@ export default function Login() {
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-outline/5 space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-outline/5 space-y-6"
+            noValidate
+          >
             <div className="space-y-4">
               <h2 className="text-on-surface font-poppins font-bold text-lg">
                 Login or Sign Up
@@ -114,18 +174,34 @@ export default function Login() {
 
                   <input
                     type="tel"
-                    value={phoneNumber}
-                    onChange={(e) =>
-                      setPhoneNumber(
-                        e.target.value
-                          .replace(/\D/g, '')
-                          .slice(0, 10)
-                      )
-                    }
                     placeholder="0000000000"
                     className="flex-1 bg-transparent outline-none"
+                    aria-invalid={!!errors.phoneNumber}
+                    disabled={authStep !== 'phone'}
+                    {...register('phoneNumber', {
+                      required: 'Phone number is required',
+                      pattern: {
+                        value: /^[6-9]\d{9}$/,
+                        message: 'Enter a valid 10-digit phone number',
+                      },
+                      onChange: (e) => {
+                        setValue(
+                          'phoneNumber',
+                          e.target.value.replace(/\D/g, '').slice(0, 10),
+                          { shouldValidate: true }
+                        );
+                        setAuthStep('phone');
+                        setRegistrationToken('');
+                      },
+                    })}
                   />
                 </div>
+
+                {errors.phoneNumber && (
+                  <p className="text-xs font-inter text-red-500 ml-1">
+                    {errors.phoneNumber.message}
+                  </p>
+                )}
               </div>
 
               {/* OTP Input */}
@@ -138,33 +214,83 @@ export default function Login() {
                   <div className="flex items-center bg-background border border-outline/10 rounded-2xl p-4">
                     <input
                       type="text"
-                      value={otp}
-                      onChange={(e) =>
-                        setOtp(
-                          e.target.value
-                            .replace(/\D/g, '')
-                            .slice(0, 6)
-                        )
-                      }
                       placeholder="Enter OTP"
                       className="flex-1 bg-transparent outline-none"
+                      aria-invalid={!!errors.otp}
+                      {...register('otp', {
+                        required: showOtpInput
+                          ? 'Verification code is required'
+                          : false,
+                        pattern: showOtpInput
+                          ? {
+                              value: /^\d{6}$/,
+                              message: 'Enter a valid 6-digit OTP',
+                            }
+                          : undefined,
+                        onChange: (e) => {
+                          setValue(
+                            'otp',
+                            e.target.value.replace(/\D/g, '').slice(0, 6),
+                            { shouldValidate: true }
+                          );
+                        },
+                      })}
                     />
                   </div>
+
+                  {errors.otp && (
+                    <p className="text-xs font-inter text-red-500 ml-1">
+                      {errors.otp.message}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {showNameInput && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-secondary font-inter uppercase tracking-[0.2em] ml-1">
+                    Name
+                  </label>
+
+                  <div className="flex items-center bg-background border border-outline/10 rounded-2xl p-4">
+                    <input
+                      type="text"
+                      placeholder="Enter your name"
+                      className="flex-1 bg-transparent outline-none"
+                      aria-invalid={!!errors.name}
+                      {...register('name', {
+                        required: showNameInput
+                          ? 'Name is required'
+                          : false,
+                        minLength: {
+                          value: 2,
+                          message: 'Name must be at least 2 characters',
+                        },
+                        pattern: {
+                          value: /^[A-Za-z\s]+$/,
+                          message: 'Name can contain only letters',
+                        },
+                        setValueAs: (value) => value.trimStart(),
+                      })}
+                    />
+                  </div>
+
+                  {errors.name && (
+                    <p className="text-xs font-inter text-red-500 ml-1">
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
 
             <button
-              onClick={
-                showOtpInput
-                  ? handleVerifyOTP
-                  : handleSendOTP
-              }
+              type="submit"
               disabled={
                 loading ||
-                (!showOtpInput &&
-                  phoneNumber.length !== 10) ||
-                (showOtpInput && otp.length !== 6)
+                (authStep === 'phone' && phoneNumber.length !== 10) ||
+                (authStep === 'otp' && otp.length !== 6) ||
+                (authStep === 'name' && name.trim().length < 2)
               }
               className="w-full bg-primary py-5 rounded-2xl shadow-xl shadow-primary/20 text-white font-poppins font-bold text-lg hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
@@ -174,12 +300,16 @@ export default function Login() {
                   size={20}
                 />
               ) : showOtpInput ? (
-                'Verify OTP'
+                showNameInput ? (
+                  'Complete Registration'
+                ) : (
+                  'Verify OTP'
+                )
               ) : (
                 'Get Verification Code'
               )}
             </button>
-          </div>
+          </form>
 
           <p className="text-[11px] text-center text-secondary font-inter leading-relaxed px-8">
             By continuing, you agree to QuickCart's

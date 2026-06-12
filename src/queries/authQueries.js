@@ -12,13 +12,22 @@ export const useSendOTP = () => {
   });
 };
 
+export const useCheckPhone = () => {
+  return useMutation({
+    mutationFn: (phoneNumber) => authService.checkPhone(phoneNumber),
+    onError: (error) => {
+      console.error('Phone check error:', error);
+    },
+  });
+};
+
 export const useVerifyOTP = () => {
   const dispatch = useDispatch();
 
   return useMutation({
     mutationFn: ({ phoneNumber, otp }) => authService.verifyOTP({ phoneNumber, otp }),
     onSuccess: (data) => {
-      if (data.status === 'success' || data.success) {
+      if ((data.status === 'success' || data.success) && data.token) {
         dispatch(setAuth({
           user: data.user || data.data?.user,
           token: data.token,
@@ -27,6 +36,26 @@ export const useVerifyOTP = () => {
     },
     onError: (error) => {
       console.error('OTP verification error:', error);
+    },
+  });
+};
+
+export const useCompleteRegistration = () => {
+  const dispatch = useDispatch();
+
+  return useMutation({
+    mutationFn: ({ name, registrationToken }) =>
+      authService.completeRegistration({ name, registrationToken }),
+    onSuccess: (data) => {
+      if ((data.status === 'success' || data.success) && data.token) {
+        dispatch(setAuth({
+          user: data.user || data.data?.user,
+          token: data.token,
+        }));
+      }
+    },
+    onError: (error) => {
+      console.error('Registration completion error:', error);
     },
   });
 };
