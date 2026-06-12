@@ -1,12 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import authService from '../api/services/authService';
 import { useDispatch } from 'react-redux';
-import { setAuth } from '../store/slices/authSlice';
+import { logout, setAuth } from '../store/slices/authSlice';
 
-/**
- * Hook to send OTP to phone number
- * Returns confirmationResult which must be used for verification
- */
 export const useSendOTP = () => {
   return useMutation({
     mutationFn: (phoneNumber) => authService.sendOTP(phoneNumber),
@@ -16,22 +12,16 @@ export const useSendOTP = () => {
   });
 };
 
-/**
- * Hook to verify OTP code
- * Updates Redux store with user and token on success
- */
 export const useVerifyOTP = () => {
   const dispatch = useDispatch();
 
   return useMutation({
-    mutationFn: (accessToken) => authService.verifyOTP(accessToken),
+    mutationFn: ({ phoneNumber, otp }) => authService.verifyOTP({ phoneNumber, otp }),
     onSuccess: (data) => {
-      if (data.status === 'success') {
-        // Store user data and token in Redux and localStorage
+      if (data.status === 'success' || data.success) {
         dispatch(setAuth({
-          user: data.data.user,
+          user: data.user || data.data?.user,
           token: data.token,
-          firebaseUser: data.firebaseUser,
         }));
       }
     },
@@ -52,7 +42,7 @@ export const useLogout = () => {
     mutationFn: () => authService.logout(),
     onSuccess: () => {
       // Clear user data from Redux and localStorage
-      dispatch({ type: 'auth/logout' });
+      dispatch(logout());
     },
     onError: (error) => {
       console.error('Logout error:', error);
