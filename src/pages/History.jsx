@@ -9,7 +9,7 @@ export default function History() {
   return (
     <div className="min-h-screen bg-background pb-28">
       {/* Header */}
-      <header className="px-6 py-8 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
+      <header className="p-2 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-white rounded-full transition-colors">
           <ArrowLeft size={24} className="text-on-surface" />
         </button>

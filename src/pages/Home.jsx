@@ -8,7 +8,7 @@ export default function Home() {
  const { user } = useSelector((state) => state.auth);
 
   return (
-    <div className="h-full  bg-background pb-24 px-[15px]">
+    <div className="h-full  bg-background pb-30 px-[15px]">
       {/* Header */}
       <header className="flex justify-between items-center fixed left-0  p-3 w-full top-0 bg-background/80 backdrop-blur-md z-20">
         <div className="flex items-center gap-3">
@@ -43,26 +43,25 @@ export default function Home() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-6 bg-primary p-4 rounded-[1rem] shadow-xl relative overflow-hidden"
+          className="mt-6 bg-primary p-4 rounded-[10px] shadow-xl relative overflow-hidden flex gap-2 items-center"
         >
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-          <div className="flex justify-between items-start relative z-10">
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/30 rounded-full blur-3xl" />
+          <div className="flex justify-between items-start relative z-10 basis-[60%] shrink-0 grow-0">
             <div>
               <span className="text-white/70 font-inter text-[10px] font-bold tracking-[0.2em] uppercase">Active Session</span>
-              <h2 className="text-white font-poppins font-bold text-3xl mt-2">Ready to Scan</h2>
+              <h2 className="text-white font-poppins font-bold text-2xl mt-2">Ready to Scan</h2>
             </div>
          
           </div>
-          <p className="text-white/90 font-inter mt-6 text-sm leading-relaxed max-w-[80%]">
+          {/* <p className="text-white/90 font-inter mt-6 text-sm leading-relaxed max-w-[80%]">
             You are currently at FreshMart - Central. Start adding items to your cart by scanning their barcodes.
-          </p>
-          <Link to="/scanner" className="block w-full bg-white mt-8 py-2 rounded-[1rem] font-poppins font-normal text-center text-primary hover:bg-white/90 transition-colors shadow-lg flex items-center  gap-2 justify-center">
-          <div className="bg-primary/20 p-3 rounded-full">
-             
+          </p> */}
+          <Link to="/scanner" className="block w-full bg-white  py-1 px-2 rounded-[10px] font-poppins font-normal text-center text-primary hover:bg-white/90 transition-colors shadow-lg flex items-center  gap-2 justify-center">
+          <div className="bg-primary/20 p-3 rounded-full">          
              
            <QrCode size={15} className="text-primary"/>  
             </div>
-             Open Scanner
+            Scan Item
           </Link>
         </motion.div>
 
@@ -83,7 +82,7 @@ export default function Home() {
 
         {/* Flash Sale */}
         <section className=" mt-10">
-          <div className="bg-[#0d1b2a] p-4 rounded-[1rem] shadow-sm border border-outline/5 relative overflow-hidden group hover:shadow-md transition-all">
+          <div className="bg-[#0d1b2a] p-4 rounded-[10px] shadow-sm border border-outline/5 relative overflow-hidden group hover:shadow-md transition-all">
             {/* <div className="absolute top-0 right-0 bg-primary-container px-6 py-2 rounded-bl-2xl">
               <span className="text-white font-bold text-xs">20% OFF</span>
             </div> */}
@@ -109,7 +108,7 @@ function StoreCard({ name, distance, color, iconColor }) {
   return (
     <motion.button 
       whileTap={{ scale: 0.95 }}
-      className="flex-shrink-0 w-44 bg-white p-5 rounded-[1rem] shadow-sm border border-outline/5 hover:border-primary/20 transition-all text-left"
+      className="flex-shrink-0 w-44 bg-white p-5 rounded-[10px] shadow-sm border border-outline/5 hover:border-primary/20 transition-all text-left"
     >
       <div className={`w-full aspect-square rounded-2xl mb-4 flex items-center justify-center ${color}`}>
         <ShoppingBag className={iconColor} size={32} />

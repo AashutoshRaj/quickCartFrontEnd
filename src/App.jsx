@@ -45,7 +45,9 @@ function AppContent() {
   }, []);
 
    const location = useLocation();
-   const pageQR  = location.pathname === "/scanner"
+   const pageQR = ["/scanner", "/cart", "/history", "/profile"].includes(
+  location.pathname
+);
 
 
   return (

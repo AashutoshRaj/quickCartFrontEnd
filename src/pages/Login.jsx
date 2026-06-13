@@ -9,6 +9,7 @@ import {
   useSendOTP,
   useVerifyOTP,
 } from '../queries/authQueries';
+import { toast } from 'sonner';
 
 export default function Login() {
   const [authStep, setAuthStep] = useState('phone');
@@ -51,15 +52,12 @@ export default function Login() {
 
       if (data.success || data.status === 'success') {
         setAuthStep('otp');
-        alert('OTP sent successfully');
+        toast.success("OTP send successful 🎉");
       }
     } catch (error) {
       console.error(error);
-
-      alert(
-        error?.response?.data?.message ||
-          'Failed to send OTP'
-      );
+        toast.error("'Failed to send OTP");
+     
     }
   };
 
@@ -74,16 +72,13 @@ export default function Login() {
       }
 
       if (data.success || data.status === 'success') {
-        alert('Login Successful');
+        toast.success("Login successful 🎉");
         navigate('/');
       }
     } catch (error) {
       console.error(error);
-
-      alert(
-        error?.response?.data?.message ||
-          'Invalid OTP'
-      );
+ toast.error('Invalid OTP');
+    
     }
   };
 
@@ -95,16 +90,13 @@ export default function Login() {
       });
 
       if (data.success || data.status === 'success') {
-        alert('Registration Successful');
+        toast.success("Login successful 🎉");
         navigate('/');
       }
     } catch (error) {
       console.error(error);
-
-      alert(
-        error?.response?.data?.message ||
-          'Failed to complete registration'
-      );
+toast.error( 'Failed to complete registration');
+      
     }
   };
 
