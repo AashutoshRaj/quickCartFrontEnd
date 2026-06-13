@@ -1,10 +1,9 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { User, CreditCard, Globe, Settings, Bell, ChevronRight, LogOut, Smartphone, ShoppingBag, Search, QrCode } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { User, CreditCard, Globe, Settings, Bell, ChevronRight, LogOut, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { signOutUser } from '../utils/firebaseAuth';
+import BottomNav from '../components/BottomNav';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -97,14 +96,7 @@ export default function Profile() {
         </section>
       </main>
 
-      {/* Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-outline/5 px-8 py-4 flex justify-around items-center z-30">
-        <NavItem to="/" icon={<ShoppingBag size={24} />} label="Home" />
-        <NavItem to="/history" icon={<Search size={24} />} label="History" />
-        <NavItem to="/scanner" icon={<QrCode size={24} />} label="Scan" />
-        <NavItem to="/cart" icon={<ShoppingBag size={24} />} label="Cart" />
-        <NavItem to="/profile" icon={<User size={24} />} label="Profile" active />
-      </nav>
+      <BottomNav />
     </div>
   );
 }
@@ -126,15 +118,6 @@ function MenuItem({ icon, label, value, color = "text-on-surface", showChevron =
         {showChevron && <ChevronRight size={18} className="text-outline" />}
       </div>
     </button>
-  );
-}
-
-function NavItem({ to, icon, label, active }) {
-  return (
-    <Link to={to} className={`flex flex-col items-center gap-1 transition-colors ${active ? 'text-primary' : 'text-secondary hover:text-on-surface'}`}>
-      {icon}
-      <span className={`text-[10px] font-inter font-semibold ${active ? 'opacity-100' : 'opacity-60'}`}>{label}</span>
-    </Link>
   );
 }
 

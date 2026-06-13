@@ -1,13 +1,13 @@
-import React from 'react';
-import { ChevronLeft, Zap, Camera, X, Info } from 'lucide-react';
+import { ChevronLeft, Zap, Camera, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import BottomNav from '../components/BottomNav';
 
 export default function Scanner() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-black relative flex flex-col">
+    <div className="min-h-screen bg-black relative flex flex-col pb-24">
       {/* Header Overlay */}
       <header className="px-6 py-8 flex items-center justify-between absolute top-0 left-0 right-0 z-20">
         <button 
@@ -69,11 +69,12 @@ export default function Scanner() {
       </main>
 
       {/* Bottom Action */}
-      <footer className="p-10 flex justify-center bg-gradient-to-t from-black to-transparent">
+      <footer className="p-6 pb-4 flex justify-center bg-gradient-to-t from-black to-transparent">
         <button className="bg-white/5 hover:bg-white/10 px-10 py-5 rounded-[2rem] border border-white/20 text-white font-poppins font-semibold transition-all backdrop-blur-md">
           Type Barcode Manually
         </button>
       </footer>
+      <BottomNav />
     </div>
   );
 }

@@ -119,9 +119,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col p-8 relative">
+    <div className="h-dvh bg-background flex flex-col  relative overflow-auto">
       {/* Header / Logo */}
-      <div className="flex justify-center mt-12 mb-10">
+      <div className="flex justify-center  mb-10">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -135,7 +135,7 @@ export default function Login() {
         </motion.div>
       </div>
 
-      <div className="flex-1 flex flex-col max-w-sm mx-auto w-full">
+      <div className="flex-1 flex flex-col max-w-sm mx-auto w-full px-[15px]">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -153,7 +153,7 @@ export default function Login() {
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-outline/5 space-y-6"
+            className="bg-white p-4 rounded-[10px] shadow-sm border border-outline/5 space-y-6"
             noValidate
           >
             <div className="space-y-4">
@@ -292,7 +292,7 @@ export default function Login() {
                 (authStep === 'otp' && otp.length !== 6) ||
                 (authStep === 'name' && name.trim().length < 2)
               }
-              className="w-full bg-primary py-5 rounded-2xl shadow-xl shadow-primary/20 text-white font-poppins font-bold text-lg hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-primary py-2 rounded-[5px] shadow-xl shadow-primary/20 text-white font-poppins font-normal text-lg hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <Loader2
@@ -306,9 +306,15 @@ export default function Login() {
                   'Verify OTP'
                 )
               ) : (
-                'Get Verification Code'
+                'Send OTP'
               )}
             </button>
+              <span className='block text-center'>OR</span>
+
+              <button className='w-full bg-white py-2 rounded-[5px]   text-primary font-poppins font-normal text-lg hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50  flex items-center justify-center gap-2 border '>
+                Login with Google
+              </button>
+
           </form>
 
           <p className="text-[11px] text-center text-secondary font-inter leading-relaxed px-8">
@@ -326,7 +332,7 @@ export default function Login() {
       </div>
 
       {/* Security Badge */}
-      <div className="pb-10 flex flex-col items-center gap-2">
+      {/* <div className="pb-10 flex flex-col items-center gap-2">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -344,7 +350,7 @@ export default function Login() {
             Bank-Grade Encryption
           </span>
         </motion.div>
-      </div>
+      </div> */}
     </div>
   );
 }

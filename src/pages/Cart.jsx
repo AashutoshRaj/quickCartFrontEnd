@@ -1,13 +1,13 @@
-import React from 'react';
 import { ChevronLeft, Trash2, Plus, Minus, CreditCard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import BottomNav from '../components/BottomNav';
 
 export default function Cart() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-background pb-52">
       {/* Header */}
       <header className="px-6 py-8 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-white rounded-full transition-colors">
@@ -46,14 +46,15 @@ export default function Cart() {
       </main>
 
       {/* Checkout Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-xl border-t border-outline/5 z-30">
+      <div className="fixed bottom-[76px] left-1/2 w-full max-w-md -translate-x-1/2 p-4 bg-white/80 backdrop-blur-xl border-t border-outline/5 z-30">
         <div className="max-w-md mx-auto">
-          <button className="w-full bg-primary flex items-center justify-center gap-3 py-5 rounded-2xl shadow-xl hover:bg-primary/90 transition-all text-white font-poppins font-bold text-lg">
+          <button className="w-full bg-primary flex items-center justify-center gap-3 py-4 rounded-2xl shadow-xl hover:bg-primary/90 transition-all text-white font-poppins font-bold text-base">
             <CreditCard size={22} />
             Checkout Now
           </button>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 }

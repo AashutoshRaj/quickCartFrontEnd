@@ -1,13 +1,13 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Search, Calendar, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Search, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import BottomNav from '../components/BottomNav';
 
 export default function History() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background pb-10">
+    <div className="min-h-screen bg-background pb-28">
       {/* Header */}
       <header className="px-6 py-8 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-white rounded-full transition-colors">
@@ -54,6 +54,7 @@ export default function History() {
           />
         </HistoryGroup>
       </main>
+      <BottomNav />
     </div>
   );
 }

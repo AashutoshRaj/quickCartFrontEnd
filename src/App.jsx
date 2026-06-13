@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag } from 'lucide-react'
 import { Provider } from 'react-redux';
@@ -44,8 +44,16 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
 
+   const location = useLocation();
+   const pageQR  = location.pathname === "/scanner"
+
+
   return (
-    <div className="max-w-md mx-auto bg-background shadow-2xl min-h-screen relative overflow-hidden flex flex-col">
+   <div
+  className={`max-w-md mx-auto bg-background shadow-2xl h-dvh overflow-auto relative flex flex-col ${
+    pageQR ? "pt-0" : "pt-[50px]"
+  }`}
+>
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div
