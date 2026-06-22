@@ -35,7 +35,7 @@ export default function Home() {
           <input 
             type="text" 
             placeholder="Search for products or stores..."
-            className="w-full bg-white pl-12 pr-6 py-4 rounded-2xl shadow-sm border border-outline/10 focus:outline-none focus:ring-2 focus:ring-primary/20 font-inter transition-all"
+            className="w-full bg-white pl-12 pr-6 py-4 rounded-[10px] shadow-sm border border-outline/10 focus:outline-none focus:ring-2 focus:ring-primary/20 font-inter transition-all"
           />
         </div>
 
@@ -45,7 +45,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="mt-6 bg-primary p-4 rounded-[10px] shadow-xl relative overflow-hidden flex gap-2 items-center"
         >
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/30 rounded-full blur-3xl" />
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/30 rounded-full blur-3xl hidden" />
           <div className="flex justify-between items-start relative z-10 basis-[60%] shrink-0 grow-0">
             <div>
               <span className="text-white/70 font-inter text-[10px] font-bold tracking-[0.2em] uppercase">Active Session</span>
