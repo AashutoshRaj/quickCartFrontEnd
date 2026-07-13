@@ -8,12 +8,13 @@ import { useBarcodeSearch } from '../hooks/products/useBarcodeSearch';
 import { ScannerOverlay } from '../components/ScannerOverlay';
 import { ProductCard } from '../components/ProductCard';
 import BottomNav from '../components/BottomNav';
+import { useAddToCart } from '../hooks/cart/useAddToCart';
 
 export default function Scanner() {
   const navigate = useNavigate();
   const [scannedBarcode, setScannedBarcode] = useState(null);
   const [showProduct, setShowProduct] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const addToCartMutation = useAddToCart();
 
   // Barcode search hook (only enabled when barcode is scanned)
   const { data: product, isLoading: isSearching, error: searchError } = useBarcodeSearch(
@@ -83,42 +84,17 @@ export default function Scanner() {
   const handleAddToCart = async (quantity = 1) => {
     if (!product) return;
 
-    setIsAddingToCart(true);
     try {
-      // Prepare product data for cart
-      const cartItem = {
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        barcode: product.barcode,
-        category: product.category,
-        image: product.image,
-        quantity: quantity,
-        stock: product.stock,
-      };
-
-      // TODO: Integrate with Redux store or Context
-      // For now, store in localStorage as example
-      const cart = JSON.parse(localStorage.getItem('quickcart_cart') || '[]');
-      const existingItem = cart.find((item) => item.id === product._id);
-
-      if (existingItem) {
-        existingItem.quantity += quantity;
-      } else {
-        cart.push(cartItem);
-      }
-
-      localStorage.setItem('quickcart_cart', JSON.stringify(cart));
-      toast.success(`${product.name} added to cart!`);
-
-      // Navigate to cart after brief delay
+      await addToCartMutation.mutateAsync({
+        productId: product._id,
+        quantity,
+        storeId: localStorage.getItem('activeStoreId') || 'default-store',
+      });
       setTimeout(() => {
         navigate('/cart');
       }, 500);
     } catch (error) {
-      toast.error('Failed to add to cart');
-    } finally {
-      setIsAddingToCart(false);
+      // handled by mutation error toast
     }
   };
 
@@ -286,7 +262,7 @@ export default function Scanner() {
               <ProductCard
                 product={product}
                 onAddToCart={handleAddToCart}
-                isAdding={isAddingToCart}
+                isAdding={addToCartMutation.isPending}
                 onScanAnother={handleScanAnother}
               />
             </motion.div>

@@ -25,6 +25,8 @@ import Onboarding from './pages/Onboarding'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
 import History from './pages/History'
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentCancel from './pages/PaymentCancel'
 
 // Initialize Interceptors
 setupInterceptors(store);
@@ -110,6 +112,8 @@ function AppContent() {
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+              <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+              <Route path="/payment-cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/onboarding" replace />} />
             </Routes>
           </motion.div>
