@@ -111,7 +111,7 @@ toast.error( 'Failed to complete registration');
   };
 
   return (
-    <div className="h-dvh bg-background flex flex-col  relative overflow-auto">
+    <div className="h-dvh bg-background flex flex-col  relative overflow-auto pt-[15px]">
       {/* Header / Logo */}
       <div className="flex justify-center  mb-10">
         <motion.div

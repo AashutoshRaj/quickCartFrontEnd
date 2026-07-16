@@ -27,6 +27,7 @@ import Profile from './pages/Profile'
 import History from './pages/History'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
+import ExitGate from './pages/ExitGate'
 
 // Initialize Interceptors
 setupInterceptors(store);
@@ -47,7 +48,7 @@ function AppContent() {
   }, []);
 
    const location = useLocation();
-   const pageQR = ["/scanner", "/cart", "/history", "/profile"].includes(
+   const pageQR = ["/scanner", "/cart", "/history", "/profile", "/login"].includes(
   location.pathname
 );
 
@@ -108,6 +109,7 @@ function AppContent() {
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
               <Route path="/scanner" element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
+              <Route path="/exit-gate" element={<ExitGate />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
