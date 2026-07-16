@@ -25,6 +25,7 @@ import Onboarding from './pages/Onboarding'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
 import History from './pages/History'
+import OrderDetails from './pages/OrderDetails'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
 import ExitGate from './pages/ExitGate'
@@ -50,7 +51,7 @@ function AppContent() {
    const location = useLocation();
    const pageQR = ["/scanner", "/cart", "/history", "/profile", "/login"].includes(
   location.pathname
-);
+) || location.pathname.match(/^\/history\/[^\/]+$/);
 
 
   return (
@@ -114,6 +115,7 @@ function AppContent() {
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+              <Route path="/history/:orderId" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
               <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
               <Route path="/payment-cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/onboarding" replace />} />

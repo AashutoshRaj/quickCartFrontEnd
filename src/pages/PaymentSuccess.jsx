@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import cartService from '../api/services/cartService';
+import apiClient from '../api/axios';
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -13,17 +14,25 @@ export default function PaymentSuccess() {
   const qrCanvasRef = useRef(null);
 
   useEffect(() => {
-    const clearCartAfterPayment = async () => {
+    const handlePaymentSuccess = async () => {
       try {
+        // Mark order as completed
+        if (sessionId) {
+          await apiClient.post('/checkout/complete', { sessionId });
+          // Invalidate orders query to refresh history
+          queryClient.invalidateQueries({ queryKey: ['orders'] });
+        }
+
+        // Clear cart
         await cartService.clearCart();
         queryClient.invalidateQueries({ queryKey: ['cart'] });
       } catch (error) {
-        console.error('Error clearing cart:', error);
+        console.error('Error handling payment success:', error);
       }
     };
 
-    clearCartAfterPayment();
-  }, [queryClient]);
+    handlePaymentSuccess();
+  }, [sessionId, queryClient]);
 
   useEffect(() => {
     if (qrCanvasRef.current && sessionId) {
