@@ -21,6 +21,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import Cart from './pages/Cart'
 import Scanner from './pages/Scanner'
+import ScanStore from './pages/ScanStore'
 import Onboarding from './pages/Onboarding'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
@@ -49,7 +50,7 @@ function AppContent() {
   }, []);
 
    const location = useLocation();
-   const pageQR = ["/scanner", "/cart", "/history", "/profile", "/login"].includes(
+   const pageQR = ["/scanner", "/scan-store", "/cart", "/history", "/profile", "/login"].includes(
   location.pathname
 ) || location.pathname.match(/^\/history\/[^\/]+$/);
 
@@ -110,6 +111,7 @@ function AppContent() {
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
               <Route path="/scanner" element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
+              <Route path="/scan-store" element={<ProtectedRoute><ScanStore /></ProtectedRoute>} />
               <Route path="/exit-gate" element={<ExitGate />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/login" element={<Login />} />

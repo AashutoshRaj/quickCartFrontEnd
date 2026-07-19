@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { MapPin, Bell, Search, ShoppingBag, ChevronRight, Plus, MapPin as Marker, ScanQrCode } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, Bell, Search, ShoppingBag, ChevronRight, Plus, MapPin as Marker, ScanQrCode, Edit2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import BottomNav from '../components/BottomNav';
@@ -19,21 +19,32 @@ const deals = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-
+  const { activeStore } = useSelector((state) => state.store); 
+  console.log("activeStore", activeStore);
+  
   return (
     <div className="h-full bg-background pb-32 px-[15px]">
       {/* Header */}
       <header className="flex justify-between items-center fixed left-0 p-3 w-full top-0 bg-background/80 backdrop-blur-md z-20">
-        <div className="flex items-center gap-3">
+        <button
+          onClick={() => navigate('/scan-store')}
+          className="flex items-center gap-3 flex-1 hover:opacity-70 transition-opacity text-left"
+        >
           <div>
             <p className="text-secondary font-inter text-xs">Hello, {user?.name || 'Seema'}</p>
             <div className="flex items-center gap-1">
               <MapPin size={16} className="text-primary" />
-              <h1 className="text-on-surface font-poppins font-semibold text-base">FreshMart - Central</h1>
+              <h1 className="text-on-surface font-poppins font-semibold text-base">
+                {activeStore?.name || activeStore?.storeName || 'Select Store'}
+              </h1>
+              {activeStore && (
+                <Edit2 size={14} className="text-primary ml-1" />
+              )}
             </div>
           </div>
-        </div>
+        </button>
         <button className="bg-white p-3 rounded-full shadow-sm hover:shadow-md transition-shadow">
           <Bell size={20} className="text-on-surface" />
         </button>
@@ -58,11 +69,20 @@ export default function Home() {
         >
           <div className="flex justify-between items-center gap-4">
             <div>
-              <span className="text-white/70 font-inter text-[10px] font-bold tracking-[0.2em] uppercase">Active Session</span>
-              <h2 className="text-white font-poppins font-bold text-2xl mt-1">Ready to Scan</h2>
-              <p className="text-white/80 font-inter text-xs mt-1">Tap to start scanning items</p>
+              <span className="text-white/70 font-inter text-[10px] font-bold tracking-[0.2em] uppercase">
+                {activeStore ? 'Active Session' : 'No Store Selected'}
+              </span>
+              <h2 className="text-white font-poppins font-bold text-2xl mt-1">
+                {activeStore ? 'Ready to Scan' : 'Scan a Store'}
+              </h2>
+              <p className="text-white/80 font-inter text-xs mt-1">
+                {activeStore ? 'Tap to start scanning items' : 'Select a store to begin shopping'}
+              </p>
             </div>
-            <Link to="/scanner" className="flex-shrink-0 bg-white p-4 rounded-2xl hover:shadow-lg transition-shadow">
+            <Link
+              to={activeStore ? '/scanner' : '/scan-store'}
+              className="flex-shrink-0 bg-white p-4 rounded-2xl hover:shadow-lg transition-shadow"
+            >
               <div className="text-2xl"><ScanQrCode /></div>
             </Link>
           </div>
