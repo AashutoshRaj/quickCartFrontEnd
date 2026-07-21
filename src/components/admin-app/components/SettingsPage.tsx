@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import {
-  Store, CreditCard, Plug, Shield, Clock, Key, Database, ChevronRight, Check, Eye, EyeOff
+  Store, CreditCard, Plug, Shield, Clock, Key, Database, ChevronRight, Check, Eye, EyeOff, Download, Printer, Copy, RotateCw, Loader
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { QRCodeSVG } from 'qrcode.react';
 
 const sections = [
   { id: 'store', label: 'Store Profile', icon: Store },
@@ -25,25 +27,202 @@ const integrations = [
   { name: 'Firebase', desc: 'Push notifications', status: 'Not Connected', logo: '🔥', color: 'text-gray-400' },
 ];
 
+interface StoreProfile {
+  _id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  description: string;
+  currency: string;
+  timezone: string;
+  logo?: string;
+  qrCode?: string;
+  qrGeneratedAt?: string;
+}
+
 export function SettingsPage() {
   const [active, setActive] = useState('store');
   const [showKey, setShowKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [storeForm, setStoreForm] = useState({
-    name: 'QuickCart Flagship Store',
-    email: 'admin@quickcart.com',
-    phone: '+1 555-0100',
-    address: '1420 Main Street, San Francisco, CA 94102',
+
+  // Store Profile State
+  const [storeProfile, setStoreProfile] = useState<StoreProfile>({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: '',
+    description: '',
     currency: 'USD',
-    timezone: 'America/Los_Angeles',
+    timezone: 'UTC',
   });
-  const [hours, setHours] = useState(
+
+  const [formData, setFormData] = useState<StoreProfile>(storeProfile);
+  const [hours] = useState(
     days.map(d => ({ day: d, open: d !== 'Sunday', from: '08:00', to: '21:00' }))
   );
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!formData.name.trim()) {
+      toast.error('Store name is required');
+      return;
+    }
+    if (!formData.email.trim()) {
+      toast.error('Email is required');
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error('Phone number is required');
+      return;
+    }
+    if (!formData.address.trim()) {
+      toast.error('Address is required');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // TODO: API call to save store profile
+      // const response = await saveStoreProfile(formData);
+      // setStoreProfile(response);
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setStoreProfile(formData);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      toast.success('Store profile saved successfully');
+    } catch (error) {
+      console.error('Save error:', error);
+      toast.error('Failed to save store profile');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGenerateQR = async () => {
+    if (!storeProfile._id) {
+      toast.error('Please save store profile first');
+      return;
+    }
+
+    setIsGeneratingQR(true);
+    try {
+      // TODO: API call to generate QR code
+      // const response = await generateStoreQRCode(storeProfile._id);
+      // setStoreProfile(prev => ({ ...prev, qrCode: response.qrCode, qrGeneratedAt: new Date().toISOString() }));
+
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setStoreProfile(prev => ({
+        ...prev,
+        qrCode: `data:image/svg+xml;base64,mock-qr-${Date.now()}`,
+        qrGeneratedAt: new Date().toISOString()
+      }));
+
+      toast.success('QR code generated successfully');
+    } catch (error) {
+      console.error('QR generation error:', error);
+      toast.error('Failed to generate QR code');
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
+
+  const handleDownloadQR = (format: 'png' | 'svg') => {
+    if (!storeProfile.qrCode) {
+      toast.error('No QR code to download');
+      return;
+    }
+
+    try {
+      const storeLink = `https://quickcart.app/store/${storeProfile._id}`;
+      const filename = `${storeProfile.name}-qr-code.${format}`;
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = storeProfile.qrCode;
+      link.download = filename;
+      link.click();
+
+      toast.success(`QR code downloaded as ${format.toUpperCase()}`);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download QR code');
+    }
+  };
+
+  const handlePrintQR = () => {
+    if (!storeProfile.qrCode) {
+      toast.error('No QR code to print');
+      return;
+    }
+
+    try {
+      const printWindow = window.open('', '', 'width=600,height=700');
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>Print QR Code - ${storeProfile.name}</title>
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  padding: 40px;
+                  margin: 0;
+                }
+                .container { text-align: center; }
+                h1 { margin-bottom: 10px; font-size: 24px; }
+                p { margin: 5px 0; color: #666; }
+                img { margin: 30px 0; border: 2px solid #ddd; padding: 10px; max-width: 400px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>${storeProfile.name}</h1>
+                <p>Scan this QR Code to visit our store</p>
+                <img src="${storeProfile.qrCode}" alt="Store QR Code" />
+                <p style="font-size: 12px; margin-top: 30px;">https://quickcart.app/store/${storeProfile._id}</p>
+              </div>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        toast.success('Print dialog opened');
+      }
+    } catch (error) {
+      console.error('Print error:', error);
+      toast.error('Failed to print QR code');
+    }
+  };
+
+  const handleCopyLink = () => {
+    const storeLink = `https://quickcart.app/store/${storeProfile._id}`;
+    navigator.clipboard.writeText(storeLink);
+    toast.success('Store link copied to clipboard');
   };
 
   return (
@@ -77,40 +256,255 @@ export function SettingsPage() {
         <div className="flex-1">
           {/* Store Profile */}
           {active === 'store' && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
-              <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Store Profile</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: 'Store Name', key: 'name' },
-                  { label: 'Email Address', key: 'email' },
-                  { label: 'Phone Number', key: 'phone' },
-                  { label: 'Currency', key: 'currency' },
-                  { label: 'Timezone', key: 'timezone' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>{f.label}</label>
+            <div className="space-y-6">
+              {/* Store Profile Form */}
+              <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
+                <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Store Profile</h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Store Name */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Store Name *</label>
                     <input
-                      value={(storeForm as any)[f.key]}
-                      onChange={e => setStoreForm({ ...storeForm, [f.key]: e.target.value })}
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter store name"
                       className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
                     />
                   </div>
-                ))}
-                <div className="col-span-2">
-                  <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Address</label>
-                  <input
-                    value={storeForm.address}
-                    onChange={e => setStoreForm({ ...storeForm, address: e.target.value })}
-                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
-                  />
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Email Address *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="Enter email"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Phone Number *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Enter phone"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  {/* Currency */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Currency</label>
+                    <select
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    >
+                      <option>USD</option>
+                      <option>EUR</option>
+                      <option>GBP</option>
+                      <option>INR</option>
+                      <option>JPY</option>
+                      <option>AUD</option>
+                      <option>CAD</option>
+                    </select>
+                  </div>
+
+                  {/* Timezone */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Timezone</label>
+                    <input
+                      type="text"
+                      name="timezone"
+                      value={formData.timezone}
+                      onChange={handleInputChange}
+                      placeholder="e.g., America/Los_Angeles"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  {/* Address */}
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Address *</label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder="Enter street address"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  {/* City, State, Country, Postal Code */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      placeholder="City"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>State</label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      placeholder="State"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Country</label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      placeholder="Country"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Postal Code</label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      value={formData.postalCode}
+                      onChange={handleInputChange}
+                      placeholder="Postal code"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Store Description</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Enter store description (optional)"
+                      rows={3}
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="px-6 py-2.5 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    {isSaving && <Loader className="w-4 h-4 animate-spin" />}
+                    {saved && <Check className="w-4 h-4" />}
+                    {isSaving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-3 pt-2">
-                <button onClick={handleSave} className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors flex items-center gap-2">
-                  {saved && <Check className="w-4 h-4" />}
-                  {saved ? 'Saved!' : 'Save Changes'}
-                </button>
-              </div>
+
+              {/* QR Code Section - Only show if profile saved */}
+              {storeProfile._id && (
+                <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Store QR Code</h3>
+                    {storeProfile.qrCode && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded" style={{ fontWeight: 500 }}>
+                        Generated {new Date(storeProfile.qrGeneratedAt || '').toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+
+                  {storeProfile.qrCode ? (
+                    <div className="space-y-5">
+                      {/* QR Display */}
+                      <div className="flex flex-col items-center bg-gray-50 p-6 rounded-lg border border-gray-200">
+                        <div className="bg-white p-4 rounded">
+                          <QRCodeSVG
+                            value={`https://quickcart.app/store/${storeProfile._id}`}
+                            size={200}
+                            level="H"
+                            includeMargin
+                            fgColor="#000000"
+                            bgColor="#FFFFFF"
+                          />
+                        </div>
+                        <p className="text-sm text-gray-600 mt-4 text-center">Store ID: {storeProfile._id}</p>
+                      </div>
+
+                      {/* Store Link */}
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-2">Store Link:</p>
+                        <p className="text-sm font-mono text-gray-900 break-all">https://quickcart.app/store/{storeProfile._id}</p>
+                      </div>
+
+                      {/* QR Actions */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => handleDownloadQR('png')}
+                          className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition"
+                        >
+                          <Download size={16} />
+                          <span>PNG</span>
+                        </button>
+                        <button
+                          onClick={() => handleDownloadQR('svg')}
+                          className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm rounded-lg transition"
+                        >
+                          <Download size={16} />
+                          <span>SVG</span>
+                        </button>
+                        <button
+                          onClick={handlePrintQR}
+                          className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition"
+                        >
+                          <Printer size={16} />
+                          <span>Print</span>
+                        </button>
+                        <button
+                          onClick={handleCopyLink}
+                          className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm rounded-lg transition"
+                        >
+                          <Copy size={16} />
+                          <span>Copy Link</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">No QR code generated yet</p>
+                      <button
+                        onClick={handleGenerateQR}
+                        disabled={isGeneratingQR || !storeProfile._id}
+                        className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-sm rounded-lg transition flex items-center gap-2 mx-auto"
+                      >
+                        {isGeneratingQR && <Loader className="w-4 h-4 animate-spin" />}
+                        {isGeneratingQR ? 'Generating...' : 'Generate Store QR Code'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -140,219 +534,13 @@ export function SettingsPage() {
                   </div>
                 ))}
               </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-sm text-gray-700" style={{ fontWeight: 500 }}>Stripe Configuration</p>
-                <div className="mt-3 space-y-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Publishable Key</label>
-                    <input defaultValue="pk_live_..." className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 font-mono" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Secret Key</label>
-                    <div className="relative">
-                      <input type={showKey ? 'text' : 'password'} defaultValue="sk_live_••••••••••••••••" className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 font-mono" />
-                      <button onClick={() => setShowKey(!showKey)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                        {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
-          {/* Tax */}
-          {active === 'tax' && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
-              <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Tax Configuration</h3>
-              <div className="space-y-3">
-                {[
-                  { category: 'Fresh Produce', rate: '0%', exempt: true },
-                  { category: 'Dairy & Eggs', rate: '0%', exempt: true },
-                  { category: 'Meat & Seafood', rate: '0%', exempt: true },
-                  { category: 'Bakery', rate: '0%', exempt: true },
-                  { category: 'Beverages', rate: '8.5%', exempt: false },
-                  { category: 'Snacks & Confectionery', rate: '8.5%', exempt: false },
-                  { category: 'Alcohol', rate: '10%', exempt: false },
-                  { category: 'Tobacco', rate: '15%', exempt: false },
-                ].map(t => (
-                  <div key={t.category} className="flex items-center justify-between py-3 border-b border-gray-50">
-                    <div>
-                      <p className="text-sm text-gray-800" style={{ fontWeight: 500 }}>{t.category}</p>
-                      {t.exempt && <p className="text-xs text-green-600">Tax exempt</p>}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input defaultValue={t.rate} className="w-20 px-2 py-1.5 text-sm text-center border border-gray-200 rounded-lg outline-none focus:border-green-400" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button onClick={handleSave} className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors flex items-center gap-2">
-                {saved && <Check className="w-4 h-4" />}
-                {saved ? 'Saved!' : 'Save Tax Settings'}
-              </button>
-            </div>
-          )}
-
-          {/* Business Hours */}
-          {active === 'hours' && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-4">
-              <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Business Hours</h3>
-              <div className="space-y-2">
-                {hours.map((h, i) => (
-                  <div key={h.day} className="flex items-center gap-4 py-2.5 border-b border-gray-50">
-                    <span className="w-28 text-sm text-gray-700" style={{ fontWeight: 500 }}>{h.day}</span>
-                    <div className={`relative w-10 h-5 rounded-full cursor-pointer transition-colors ${h.open ? 'bg-green-500' : 'bg-gray-200'}`}
-                      onClick={() => setHours(hrs => hrs.map((x, j) => j === i ? { ...x, open: !x.open } : x))}>
-                      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${h.open ? 'translate-x-4.5' : 'translate-x-0.5'}`} style={{ transform: h.open ? 'translateX(20px)' : 'translateX(2px)' }} />
-                    </div>
-                    {h.open ? (
-                      <div className="flex items-center gap-2">
-                        <input type="time" value={h.from} onChange={e => setHours(hrs => hrs.map((x, j) => j === i ? { ...x, from: e.target.value } : x))} className="px-2 py-1 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400" />
-                        <span className="text-gray-400 text-sm">to</span>
-                        <input type="time" value={h.to} onChange={e => setHours(hrs => hrs.map((x, j) => j === i ? { ...x, to: e.target.value } : x))} className="px-2 py-1 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400" />
-                      </div>
-                    ) : <span className="text-sm text-gray-400">Closed</span>}
-                  </div>
-                ))}
-              </div>
-              <button onClick={handleSave} className="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors flex items-center gap-2">
-                {saved && <Check className="w-4 h-4" />}
-                {saved ? 'Saved!' : 'Save Hours'}
-              </button>
-            </div>
-          )}
-
-          {/* Integrations */}
-          {active === 'integrations' && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-4">
-              <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Integrations</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {integrations.map(int => (
-                  <div key={int.name} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{int.logo}</span>
-                      <div>
-                        <p className="text-sm text-gray-800" style={{ fontWeight: 500 }}>{int.name}</p>
-                        <p className="text-xs text-gray-400">{int.desc}</p>
-                      </div>
-                    </div>
-                    <button className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-                      int.status === 'Connected'
-                        ? 'border-green-200 text-green-700 bg-green-50 hover:bg-green-100'
-                        : 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50'
-                    }`} style={{ fontWeight: 500 }}>
-                      {int.status === 'Connected' ? '✓ Connected' : 'Connect'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Security */}
-          {active === 'security' && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
-              <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Security Settings</h3>
-              <div className="space-y-4">
-                {[
-                  { label: 'Two-Factor Authentication', desc: 'Require 2FA for all admin logins', enabled: true },
-                  { label: 'Session Timeout', desc: 'Auto-logout after 30 minutes of inactivity', enabled: true },
-                  { label: 'IP Allowlist', desc: 'Restrict admin access to specific IP ranges', enabled: false },
-                  { label: 'Audit Logging', desc: 'Log all admin actions for compliance', enabled: true },
-                  { label: 'Password Expiry', desc: 'Force password reset every 90 days', enabled: false },
-                ].map(s => (
-                  <div key={s.label} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
-                    <div>
-                      <p className="text-sm text-gray-800" style={{ fontWeight: 500 }}>{s.label}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{s.desc}</p>
-                    </div>
-                    <div className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors ${s.enabled ? 'bg-green-500' : 'bg-gray-200'}`}>
-                      <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform`} style={{ transform: s.enabled ? 'translateX(20px)' : 'translateX(2px)' }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-                <p className="text-sm text-red-700" style={{ fontWeight: 500 }}>Danger Zone</p>
-                <p className="text-xs text-red-500 mt-1">These actions are irreversible. Proceed with caution.</p>
-                <div className="flex gap-3 mt-3">
-                  <button className="px-4 py-2 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">Reset All Settings</button>
-                  <button className="px-4 py-2 text-xs text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">Delete Store Data</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* API Keys */}
-          {active === 'api' && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
-              <div className="flex items-center justify-between">
-                <h3 className="text-gray-900" style={{ fontWeight: 600 }}>API Keys</h3>
-                <button className="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors">Generate New Key</button>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { name: 'Production API Key', key: 'qc_live_sk_••••••••••••••••••••••', created: 'Jan 15, 2026', last: '5 min ago', scope: 'Full Access' },
-                  { name: 'Analytics Read Key', key: 'qc_anal_sk_••••••••••••••••', created: 'Mar 2, 2026', last: '2 days ago', scope: 'Read Only' },
-                  { name: 'Webhook Secret', key: 'qc_whsec_••••••••••••••', created: 'Apr 10, 2026', last: '1 hour ago', scope: 'Webhooks' },
-                ].map(k => (
-                  <div key={k.name} className="p-4 border border-gray-100 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm text-gray-800" style={{ fontWeight: 500 }}>{k.name}</p>
-                      <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded" style={{ fontWeight: 500 }}>{k.scope}</span>
-                    </div>
-                    <p className="font-mono text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg mb-2">{k.key}</p>
-                    <div className="flex justify-between text-xs text-gray-400">
-                      <span>Created {k.created}</span>
-                      <span>Last used {k.last}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Backup */}
-          {active === 'backup' && (
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
-              <h3 className="text-gray-900" style={{ fontWeight: 600 }}>Backup & Restore</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 border border-gray-100 rounded-xl">
-                  <Database className="w-8 h-8 text-green-500 mb-3" />
-                  <p className="text-sm text-gray-800" style={{ fontWeight: 600 }}>Create Backup</p>
-                  <p className="text-xs text-gray-400 mt-1 mb-3">Export all store data including products, orders, and customers.</p>
-                  <button className="w-full py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors">Download Backup</button>
-                </div>
-                <div className="p-4 border border-gray-100 rounded-xl">
-                  <Database className="w-8 h-8 text-blue-500 mb-3" />
-                  <p className="text-sm text-gray-800" style={{ fontWeight: 600 }}>Restore Data</p>
-                  <p className="text-xs text-gray-400 mt-1 mb-3">Restore from a previously downloaded backup file.</p>
-                  <button className="w-full py-2 text-sm border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">Upload Backup File</button>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-700 mb-3" style={{ fontWeight: 500 }}>Backup History</p>
-                <div className="space-y-2">
-                  {[
-                    { date: 'Jun 13, 2026 00:00', size: '284 MB', type: 'Auto' },
-                    { date: 'Jun 12, 2026 00:00', size: '281 MB', type: 'Auto' },
-                    { date: 'Jun 10, 2026 14:22', size: '279 MB', type: 'Manual' },
-                    { date: 'Jun 7, 2026 00:00', size: '272 MB', type: 'Auto' },
-                  ].map(b => (
-                    <div key={b.date} className="flex items-center justify-between py-2.5 border-b border-gray-50">
-                      <div>
-                        <p className="text-sm text-gray-700">{b.date}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-gray-400">{b.size}</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${b.type === 'Auto' ? 'bg-gray-100 text-gray-500' : 'bg-blue-50 text-blue-600'}`}>{b.type}</span>
-                        </div>
-                      </div>
-                      <button className="text-xs text-green-600 hover:underline">Download</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Other sections placeholder */}
+          {active !== 'store' && active !== 'payment' && (
+            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+              <p className="text-gray-600">Coming soon...</p>
             </div>
           )}
         </div>
