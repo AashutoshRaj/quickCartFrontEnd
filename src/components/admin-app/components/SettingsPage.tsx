@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Store, CreditCard, Plug, Shield, Clock, Key, Database, ChevronRight, Check, Eye, EyeOff, Download, Printer, Copy, RotateCw, Loader
 } from 'lucide-react';
@@ -72,6 +72,34 @@ export function SettingsPage() {
     days.map(d => ({ day: d, open: d !== 'Sunday', from: '08:00', to: '21:00' }))
   );
 
+  // Fetch store profile on component mount and when store tab is active
+  useEffect(() => {
+    const fetchStoreProfile = async () => {
+      try {
+        const response = await fetch('/api/v1/stores/profile');
+        if (!response.ok) {
+          if (response.status === 404) {
+            // No profile exists yet - show empty form
+            console.log('No store profile found. Starting fresh.');
+            return;
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const profileData = data.data?.store || data;
+        setStoreProfile(profileData);
+        setFormData(profileData);
+      } catch (error) {
+        console.error('Error fetching store profile:', error);
+        // Silently fail - form remains empty for new profile
+      }
+    };
+
+    if (active === 'store') {
+      fetchStoreProfile();
+    }
+  }, [active]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -97,20 +125,31 @@ export function SettingsPage() {
 
     setIsSaving(true);
     try {
-      // TODO: API call to save store profile
-      // const response = await saveStoreProfile(formData);
-      // setStoreProfile(response);
+      // Call backend API to save store profile
+      const response = await fetch('/api/v1/stores/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
 
-      setStoreProfile(formData);
+      const data = await response.json();
+      const savedProfile = data.data?.store || data;
+
+      setStoreProfile(savedProfile);
+      setFormData(savedProfile);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
       toast.success('Store profile saved successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Save error:', error);
-      toast.error('Failed to save store profile');
+      toast.error(error.message || 'Failed to save store profile');
     } finally {
       setIsSaving(false);
     }
@@ -124,23 +163,27 @@ export function SettingsPage() {
 
     setIsGeneratingQR(true);
     try {
-      // TODO: API call to generate QR code
-      // const response = await generateStoreQRCode(storeProfile._id);
-      // setStoreProfile(prev => ({ ...prev, qrCode: response.qrCode, qrGeneratedAt: new Date().toISOString() }));
+      // Call backend API to generate QR code
+      const response = await fetch('/api/v1/stores/profile/generate-qr', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
 
-      setStoreProfile(prev => ({
-        ...prev,
-        qrCode: `data:image/svg+xml;base64,mock-qr-${Date.now()}`,
-        qrGeneratedAt: new Date().toISOString()
-      }));
+      const data = await response.json();
+      const updatedProfile = data.data?.store || data;
 
+      setStoreProfile(updatedProfile);
       toast.success('QR code generated successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('QR generation error:', error);
-      toast.error('Failed to generate QR code');
+      toast.error(error.message || 'Failed to generate QR code');
     } finally {
       setIsGeneratingQR(false);
     }
