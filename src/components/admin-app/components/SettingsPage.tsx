@@ -31,7 +31,7 @@ interface StoreProfile {
   _id?: string;
   name: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
   address: string;
   city: string;
   state: string;
@@ -370,8 +370,8 @@ export function SettingsPage() {
                     <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Phone Number *</label>
                     <input
                       type="tel"
-                      name="phone"
-                      value={formData.phone}
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
                       onChange={handleInputChange}
                       placeholder="Enter phone"
                       className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
