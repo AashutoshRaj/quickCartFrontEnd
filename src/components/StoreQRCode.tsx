@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useState } from 'react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Download, Printer, Copy, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -144,7 +144,7 @@ export const StoreQRCode: React.FC<StoreQRCodeProps> = ({
       {/* QR Code Display */}
       <div className="flex justify-center bg-white p-8 rounded-lg border">
         <div ref={qrRef}>
-          <QRCode
+          <QRCodeSVG
             value={storeLink}
             size={256}
             level="H"

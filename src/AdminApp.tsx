@@ -36,6 +36,7 @@ import { RolesPermissionsPage } from './pages/admin/staff/RolesPermissionsPage';
 import { SmsCampaignsPage } from './pages/admin/notifications/SmsCampaignsPage';
 import { PushNotificationsPage } from './pages/admin/notifications/PushNotificationsPage';
 import { EmailCampaignsPage } from './pages/admin/notifications/EmailCampaignsPage';
+import { StoreProfilePage } from './pages/admin/settings/StoreProfilePage';
 import { StoreSettingsPage } from './pages/admin/settings/StoreSettingsPage';
 import { PaymentMethodsPage } from './pages/admin/settings/PaymentMethodsPage';
 import { IntegrationsPage } from './pages/admin/settings/IntegrationsPage';
@@ -109,6 +110,7 @@ const AdminApp = (): ReactElement => {
           <Route path="notifications/email" element={<EmailCampaignsPage />} />
 
           {/* Settings */}
+          <Route path="settings/store-profile" element={<StoreProfilePage />} />
           <Route path="settings/store" element={<StoreSettingsPage />} />
           <Route path="settings/payments" element={<PaymentMethodsPage />} />
           <Route path="settings/integrations" element={<IntegrationsPage />} />
