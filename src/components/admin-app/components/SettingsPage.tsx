@@ -56,7 +56,7 @@ export function SettingsPage() {
   const [storeProfile, setStoreProfile] = useState<StoreProfile>({
     name: '',
     email: '',
-    phone: '',
+    phoneNumber: '',
     address: '',
     city: '',
     state: '',
@@ -128,7 +128,7 @@ export function SettingsPage() {
       toast.error('Email is required');
       return;
     }
-    if (!formData.phone.trim()) {
+    if (!formData.phoneNumber.trim()) {
       toast.error('Phone number is required');
       return;
     }
