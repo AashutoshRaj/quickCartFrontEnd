@@ -10,16 +10,23 @@ const storeSlice = createSlice({
   reducers: {
     setActiveStore: (state, action) => {
       const storeData = action.payload;
+      console.log("Full store data from API:", storeData);
       state.activeStore = {
         storeId: storeData.storeId,
         name: storeData.name,
+        storeName: storeData.storeName,
         logo: storeData.logo,
         currency: storeData.currency,
         address: storeData.address,
+        city: storeData.city,
+        state: storeData.state,
+        country: storeData.country,
         timezone: storeData.timezone,
+        phone: storeData.phone,
         phoneNumber: storeData.phoneNumber,
         status: storeData.status,
       };
+      console.log("Stored activeStore in Redux:", state.activeStore);
 
       // Persist to localStorage
       localStorage.setItem('activeStore', JSON.stringify(state.activeStore));

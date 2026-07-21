@@ -23,7 +23,7 @@ export default function ScanStore() {
     { enabled: !!scannedStoreId }
   );
 
-  console.log("storeInfoooooo",store )
+  console.log("storeInfoooooo", store )
   const {
     isInitialized,
     isScanning,
@@ -92,15 +92,13 @@ export default function ScanStore() {
     if (store && !isNavigating) {
       setIsNavigating(true);
       try {
-        await stopScanner();
+        await Promise.race([stopScanner(), new Promise(r => setTimeout(r, 500))]);
+        console.log("Dispatching store to Redux:", store);
         dispatch(setActiveStore(store));
         toast.success('Store session activated');
-        setTimeout(() => {
-          navigate('/');
-        }, 300);
+        navigate('/');
       } catch (error) {
         console.error('Error saving store:', error);
-        setIsNavigating(false);
         navigate('/');
       }
     }
@@ -121,10 +119,10 @@ export default function ScanStore() {
 
   const handleBackButton = async () => {
     try {
-      await stopScanner();
-      navigate(-1);
+      await Promise.race([stopScanner(), new Promise(r => setTimeout(r, 500))]);
     } catch (error) {
-      console.error('Error on back:', error);
+      console.error('Error stopping scanner:', error);
+    } finally {
       navigate(-1);
     }
   };
@@ -308,7 +306,7 @@ export default function ScanStore() {
                 {/* Store Details */}
                 <div className="p-6 space-y-4">
                   <div>
-                    <h2 className="text-white text-2xl font-bold">{store?.storeName}</h2>
+                    <h2 className="text-white text-2xl font-bold">{store.name}</h2>
                     <p className={`text-xs font-semibold mt-2 ${
                       store.status === 'active' ? 'text-green-400' : 'text-yellow-400'
                     }`}>
