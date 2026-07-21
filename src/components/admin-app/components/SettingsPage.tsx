@@ -77,18 +77,32 @@ export function SettingsPage() {
     const fetchStoreProfile = async () => {
       try {
         const response = await fetch('/api/v1/stores/profile');
-        if (!response.ok) {
-          if (response.status === 404) {
-            // No profile exists yet - show empty form
-            console.log('No store profile found. Starting fresh.');
-            return;
-          }
-          throw new Error(`HTTP error! status: ${response.status}`);
+
+        // Handle 404 - no profile exists yet
+        if (response.status === 404) {
+          console.log('No store profile found. Starting fresh.');
+          return;
         }
-        const data = await response.json();
-        const profileData = data.data?.store || data;
-        setStoreProfile(profileData);
-        setFormData(profileData);
+
+        if (!response.ok) {
+          console.error(`HTTP error! status: ${response.status}`);
+          return;
+        }
+
+        // Parse JSON response safely
+        const text = await response.text();
+        if (!text) {
+          console.log('Empty response - no profile exists');
+          return;
+        }
+
+        const data = JSON.parse(text);
+        const profileData = data.data?.store || data.store || data;
+
+        if (profileData && profileData._id) {
+          setStoreProfile(profileData);
+          setFormData(profileData);
+        }
       } catch (error) {
         console.error('Error fetching store profile:', error);
         // Silently fail - form remains empty for new profile
@@ -134,13 +148,23 @@ export function SettingsPage() {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      // Parse response text first
+      const text = await response.text();
+      if (!text) {
+        throw new Error('Empty response from server');
       }
 
-      const data = await response.json();
-      const savedProfile = data.data?.store || data;
+      const data = JSON.parse(text);
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const savedProfile = data.data?.store || data.store || data;
+
+      if (!savedProfile || !savedProfile._id) {
+        throw new Error('Invalid response format - missing store data');
+      }
 
       setStoreProfile(savedProfile);
       setFormData(savedProfile);
@@ -171,13 +195,23 @@ export function SettingsPage() {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      // Parse response text first
+      const text = await response.text();
+      if (!text) {
+        throw new Error('Empty response from server');
       }
 
-      const data = await response.json();
-      const updatedProfile = data.data?.store || data;
+      const data = JSON.parse(text);
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const updatedProfile = data.data?.store || data.store || data;
+
+      if (!updatedProfile || !updatedProfile.qrCode) {
+        throw new Error('Invalid response - QR code not generated');
+      }
 
       setStoreProfile(updatedProfile);
       toast.success('QR code generated successfully');
