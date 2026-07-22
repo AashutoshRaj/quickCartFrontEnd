@@ -72,8 +72,8 @@ export function ImportHistory() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{(item.successfulImports || 0).toLocaleString()}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">{(item.failedRecords || 0).toLocaleString()}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusStyles[item.status as keyof typeof statusStyles]}`}>
-                    {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusStyles[item.importStatus as keyof typeof statusStyles]}`}>
+                    {item.importStatus.charAt(0).toUpperCase() + item.importStatus.slice(1)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
