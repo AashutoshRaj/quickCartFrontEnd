@@ -72,25 +72,45 @@ export function SettingsPage() {
     days.map(d => ({ day: d, open: d !== 'Sunday', from: '08:00', to: '21:00' }))
   );
 
-  // Fetch store profile on component mount and when store tab is active
+  // Fetch user data and store profile on component mount
   useEffect(() => {
-    const fetchStoreProfile = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/v1/stores/profile');
+        // Fetch user data for auto-population
+        const userResponse = await fetch('/api/v1/users/profile');
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          const user = userData.data?.user || userData.user || userData;
+
+          // Auto-populate with user signup data
+          setFormData(prev => ({
+            ...prev,
+            name: prev.name || user.name || user.fullName || '',
+            email: user.email || '',
+            phoneNumber: prev.phoneNumber || user.phone || user.phoneNumber || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+
+      try {
+        // Fetch store profile
+        const storeResponse = await fetch('/api/v1/stores/profile');
 
         // Handle 404 - no profile exists yet
-        if (response.status === 404) {
+        if (storeResponse.status === 404) {
           console.log('No store profile found. Starting fresh.');
           return;
         }
 
-        if (!response.ok) {
-          console.error(`HTTP error! status: ${response.status}`);
+        if (!storeResponse.ok) {
+          console.error(`HTTP error! status: ${storeResponse.status}`);
           return;
         }
 
         // Parse JSON response safely
-        const text = await response.text();
+        const text = await storeResponse.text();
         if (!text) {
           console.log('Empty response - no profile exists');
           return;
@@ -110,7 +130,7 @@ export function SettingsPage() {
     };
 
     if (active === 'store') {
-      fetchStoreProfile();
+      fetchData();
     }
   }, [active]);
 
@@ -352,29 +372,29 @@ export function SettingsPage() {
                     />
                   </div>
 
-                  {/* Email */}
+                  {/* Email - Read-only */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Email Address *</label>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Email Address (Read-only)</label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="Enter email"
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                      disabled
+                      placeholder="Email from signup"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                     />
                   </div>
 
-                  {/* Phone */}
+                  {/* Phone - Read-only */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Phone Number *</label>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Phone Number (Read-only)</label>
                     <input
                       type="tel"
                       name="phoneNumber"
                       value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      placeholder="Enter phone"
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
+                      disabled
+                      placeholder="Phone from signup"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                     />
                   </div>
 
