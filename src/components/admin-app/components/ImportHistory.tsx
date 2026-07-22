@@ -67,10 +67,10 @@ export function ImportHistory() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{new Date(item.createdAt).toLocaleString()}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.uploadedBy?.name || '—'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{(item.productCount || 0).toLocaleString()}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{(item.imported || 0).toLocaleString()}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">{(item.failed || 0).toLocaleString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.uploadedBy || '—'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{(item.totalRecords || 0).toLocaleString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{(item.successfulImports || 0).toLocaleString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">{(item.failedRecords || 0).toLocaleString()}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusStyles[item.status as keyof typeof statusStyles]}`}>
                     {item.status.charAt(0).toUpperCase() + item.status.slice(1)}

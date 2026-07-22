@@ -1,8 +1,16 @@
 import api from '../axios.ts';
 
-export const getProducts = async (page = 1, limit = 20, search = '') => {
+export const getProducts = async (
+  page = 1,
+  limit = 20,
+  search = '',
+  category = '',
+  status = '',
+  sortBy = 'createdDate',
+  sortOrder = 'desc'
+) => {
   const response = await api.get('/products', {
-    params: { page, limit, search },
+    params: { page, limit, search, category, status, sortBy, sortOrder },
   });
   return response.data;
 };

@@ -5,9 +5,13 @@ import useProducts from '../../../admin-hooks/products/useProducts';
 export function ProductList() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('createdDate');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [category, setCategory] = useState('');
+  const [status, setStatus] = useState('');
   const limit = 20;
 
-  const { data, isLoading, isError } = useProducts(page, limit, search);
+  const { data, isLoading, isError } = useProducts(page, limit, search, category, status, sortBy, sortOrder);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -34,6 +38,40 @@ export function ProductList() {
             onChange={handleSearch}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
+        </div>
+
+        {/* Filter and Sort Controls */}
+        <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="createdDate">Date (Newest)</option>
+              <option value="name">Product Name</option>
+              <option value="price">Price</option>
+              <option value="stock">Stock</option>
+              <option value="category">Category</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
+            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="desc">Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <input type="text" placeholder="Filter category..." value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"/>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="discontinued">Discontinued</option>
+            </select>
+          </div>
         </div>
       </div>
 

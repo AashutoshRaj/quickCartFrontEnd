@@ -7,7 +7,7 @@ import {
   Loader,
 } from 'lucide-react';
 import { useState, useRef } from 'react';
-import { useImportProducts } from '../../../hooks/useProducts';
+import { useImportProducts } from '../../../admin-hooks/import/useImportProducts';
 
 interface ImportResult {
   total: number;
@@ -78,7 +78,10 @@ export function ProductImportCenter() {
   const handleImport = async () => {
     if (!selectedFile) return;
 
-    importProducts(selectedFile, {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    importProducts(formData, {
       onSuccess: (response) => {
         setImportResult(response.data);
         setSelectedFile(null);
