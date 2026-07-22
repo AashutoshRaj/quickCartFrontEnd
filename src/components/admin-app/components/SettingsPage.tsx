@@ -82,13 +82,23 @@ export function SettingsPage() {
           const userData = await userResponse.json();
           const user = userData.data?.user || userData.user || userData;
 
+          console.log('User data fetched:', user);
+
           // Auto-populate with user signup data
+          const userEmail = user.email || user.emailAddress || '';
+          const userPhone = user.phone || user.phoneNumber || user.mobileNumber || '';
+          const userName = user.name || user.fullName || user.firstName || '';
+
+          console.log('Extracted - Name:', userName, 'Email:', userEmail, 'Phone:', userPhone);
+
           setFormData(prev => ({
             ...prev,
-            name: prev.name || user.name || user.fullName || '',
-            email: user.email || '',
-            phoneNumber: prev.phoneNumber || user.phone || user.phoneNumber || '',
+            name: prev.name || userName,
+            email: userEmail,
+            phoneNumber: prev.phoneNumber || userPhone,
           }));
+        } else {
+          console.warn('Failed to fetch user data. Status:', userResponse.status);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -394,30 +404,36 @@ export function SettingsPage() {
                     />
                   </div>
 
-                  {/* Email - Read-only */}
+                  {/* Email - Read-only from signup */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Email Address (Read-only)</label>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>
+                      Email Address (from signup - read-only)
+                    </label>
                     <input
                       type="email"
                       name="email"
-                      value={formData.email}
+                      value={formData.email || ''}
                       disabled
-                      placeholder="Email from signup"
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                      placeholder="Loading email from account..."
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed font-medium"
                     />
+                    <p className="text-xs text-gray-400 mt-1">This is the email you used when signing up. Cannot be changed.</p>
                   </div>
 
-                  {/* Phone - Read-only */}
+                  {/* Phone - Read-only from signup */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>Phone Number (Read-only)</label>
+                    <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>
+                      Phone Number (from signup - read-only)
+                    </label>
                     <input
                       type="tel"
                       name="phoneNumber"
-                      value={formData.phoneNumber}
+                      value={formData.phoneNumber || ''}
                       disabled
-                      placeholder="Phone from signup"
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                      placeholder="Loading phone from account..."
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed font-medium"
                     />
+                    <p className="text-xs text-gray-400 mt-1">This is the phone number you provided during signup. Cannot be changed.</p>
                   </div>
 
                   {/* Currency */}
