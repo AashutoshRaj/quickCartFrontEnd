@@ -15,3 +15,8 @@ export const getImportHistory = async (page = 1, limit = 10) => {
   });
   return response.data;
 };
+
+export const getImportById = async (id: string) => {
+  const response = await api.get(`/imports/${id}`);
+  return response.data;
+};
