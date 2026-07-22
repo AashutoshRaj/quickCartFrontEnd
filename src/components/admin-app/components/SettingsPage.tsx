@@ -417,20 +417,20 @@ export function SettingsPage() {
                     />
                   </div>
 
-                  {/* Email - Read-only from signup */}
+                  {/* Email - Editable (temp for testing) */}
                   <div>
                     <label className="block text-xs text-gray-500 mb-1.5" style={{ fontWeight: 500 }}>
-                      Email Address (from signup - read-only)
+                      Email Address *
                     </label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email || ''}
-                      disabled
-                      placeholder="Loading email from account..."
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed font-medium"
+                      onChange={handleInputChange}
+                      placeholder="Enter or auto-filled email"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400"
                     />
-                    <p className="text-xs text-gray-400 mt-1">This is the email you used when signing up. Cannot be changed.</p>
+                    <p className="text-xs text-gray-400 mt-1">Auto-filled from signup if available. You can edit it here.</p>
                   </div>
 
                   {/* Phone - Read-only from signup */}
