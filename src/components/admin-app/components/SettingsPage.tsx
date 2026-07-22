@@ -134,8 +134,17 @@ export function SettingsPage() {
         const profileData = data.data?.store || data.store || data;
 
         if (profileData && profileData._id) {
+          console.log('Store profile found:', profileData);
           setStoreProfile(profileData);
-          setFormData(profileData);
+
+          // Merge store profile with form data, preserving user data (email, phone)
+          setFormData((prev: StoreProfile) => ({
+            ...profileData,
+            email: prev.email || profileData.email || '', // Keep user email
+            phoneNumber: prev.phoneNumber || profileData.phoneNumber || '', // Keep user phone
+          }));
+
+          console.log('Merged store profile with user data. Email preserved.');
         }
       } catch (error) {
         console.error('Error fetching store profile:', error);
