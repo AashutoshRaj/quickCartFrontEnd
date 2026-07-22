@@ -136,29 +136,45 @@ export function SettingsPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    console.log(`Form field changed: ${name} = ${value}`);
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      console.log('Updated formData:', updated);
+      return updated;
+    });
   };
 
   const handleSaveProfile = async () => {
-    if (!formData.name.trim()) {
+    console.log('Save clicked. FormData:', formData);
+
+    // Validate required fields
+    if (!formData.name?.trim()) {
+      console.error('Name is empty');
       toast.error('Store name is required');
       return;
     }
-    if (!formData.email.trim()) {
-      toast.error('Email is required');
-      return;
-    }
-    if (!formData.phoneNumber.trim()) {
-      toast.error('Phone number is required');
-      return;
-    }
-    if (!formData.address.trim()) {
+    if (!formData.address?.trim()) {
+      console.error('Address is empty');
       toast.error('Address is required');
+      return;
+    }
+
+    // Email and phone auto-populated from user data, required but read-only
+    if (!formData.email?.trim()) {
+      console.error('Email is empty - user data not loaded?');
+      toast.error('Email is required (should be auto-filled from signup)');
+      return;
+    }
+    if (!formData.phoneNumber?.trim()) {
+      console.error('PhoneNumber is empty - user data not loaded?');
+      toast.error('Phone number is required (should be auto-filled from signup)');
       return;
     }
 
     setIsSaving(true);
     try {
+      console.log('Sending to backend:', JSON.stringify(formData, null, 2));
+
       // Call backend API to save store profile
       const response = await fetch('/api/v1/stores/profile', {
         method: 'POST',
@@ -168,19 +184,25 @@ export function SettingsPage() {
         body: JSON.stringify(formData),
       });
 
+      console.log('Response status:', response.status);
+
       // Parse response text first
       const text = await response.text();
+      console.log('Response text:', text.substring(0, 200));
+
       if (!text) {
         throw new Error('Empty response from server');
       }
 
       const data = JSON.parse(text);
+      console.log('Parsed response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       const savedProfile = data.data?.store || data.store || data;
+      console.log('Saved profile:', savedProfile);
 
       if (!savedProfile || !savedProfile._id) {
         throw new Error('Invalid response format - missing store data');
