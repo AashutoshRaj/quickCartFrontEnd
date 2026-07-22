@@ -79,15 +79,17 @@ export function SettingsPage() {
         // Fetch user data for auto-population
         const userResponse = await fetch('/api/v1/users/profile');
         if (userResponse.ok) {
-          const userData = await userResponse.json();
-          const user = userData.data?.user || userData.user || userData;
+          const responseData = await userResponse.json();
+          // Response format: { status: 'success', data: user }
+          const user = responseData.data || responseData;
 
-          console.log('User data fetched:', user);
+          console.log('User data API response:', responseData);
+          console.log('Extracted user object:', user);
 
           // Auto-populate with user signup data
-          const userEmail = user.email || user.emailAddress || '';
-          const userPhone = user.phone || user.phoneNumber || user.mobileNumber || '';
-          const userName = user.name || user.fullName || user.firstName || '';
+          const userEmail = user.email || '';
+          const userPhone = user.phoneNumber || '';
+          const userName = user.name || '';
 
           console.log('Extracted - Name:', userName, 'Email:', userEmail, 'Phone:', userPhone);
 
@@ -97,6 +99,8 @@ export function SettingsPage() {
             email: userEmail,
             phoneNumber: prev.phoneNumber || userPhone,
           }));
+
+          console.log('Form data updated with user info');
         } else {
           console.warn('Failed to fetch user data. Status:', userResponse.status);
         }
