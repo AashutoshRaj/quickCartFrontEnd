@@ -2,22 +2,27 @@ import { Search, HelpCircle, Settings, Bell, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../admin-auth/AuthContext';
 import { AUTH_PATHS } from '../../../admin-routes/RouteConstants';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
 
 export function Header() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const { data: storeProfile } = useStoreProfile();
 
   const handleLogout = () => {
     logout();
     navigate(AUTH_PATHS.login, { replace: true });
   };
 
+  // Use store name from store profile, fallback to user name
+  const storeName = storeProfile?.name || 'Store Manager';
+
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <h2 className="text-xl font-semibold text-gray-900">QuickCart Dashboard</h2>
-          
+
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -40,15 +45,15 @@ export function Header() {
             <Bell className="w-5 h-5 text-gray-600" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
-          
+
           {/* User Profile */}
           <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user?.name || 'Alex Thompson'}</p>
-              <p className="text-xs text-gray-500">{user?.storeName || 'Store Manager'}</p>
+              <p className="text-sm font-medium text-gray-900">{user?.name || 'Admin'}</p>
+              <p className="text-xs text-gray-500">{storeName}</p>
             </div>
             <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-medium">
-              {(user?.name || 'Alex Thompson').split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase()}
+              {(user?.name || 'Admin').split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase()}
             </div>
             <button
               onClick={handleLogout}

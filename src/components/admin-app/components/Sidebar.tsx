@@ -3,11 +3,13 @@ import { ChevronDown, ChevronRight, Zap } from 'lucide-react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { adminNavigation } from '../../../admin-routes/RouteConstants';
 import { useAuth } from '../../../admin-auth/AuthContext';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
 
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-   const {  user } = useAuth();
+  const { user } = useAuth();
+  const { data: storeProfile } = useStoreProfile();
 
   const getDefaultOpen = () => {
     const openSections: Record<string, boolean> = {};
@@ -34,6 +36,17 @@ export function Sidebar() {
 
   const isParentActive = (item: (typeof adminNavigation)[number]) =>
     item.path === location.pathname || Boolean(item.children?.some(child => child.path === location.pathname));
+
+  // Use store name from store profile
+  const storeName = storeProfile?.name || 'Store Manager';
+
+  // Generate initials from store name for avatar
+  const storeInitials = storeName
+    .split(' ')
+    .map(word => word.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="w-52 bg-[#1e2432] text-white flex flex-col flex-shrink-0" style={{ minHeight: '100vh' }}>
@@ -113,21 +126,24 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User */}
+      {/* Store Info */}
       <div className="px-3 py-4 border-t border-white/10">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-xs flex-shrink-0" style={{ fontWeight: 700 }}>
-            {user?.storeName
-                ?.split(" ")
-                .map(word => word.charAt(0))
-                .join("")
-                .slice(0, 2)
-                .toUpperCase()}
-
-          </div>
+          {/* Store Logo or Avatar */}
+          {storeProfile?.logo ? (
+            <img
+              src={storeProfile.logo}
+              alt={storeName}
+              className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-xs flex-shrink-0" style={{ fontWeight: 700 }}>
+              {storeInitials}
+            </div>
+          )}
           <div className="min-w-0">
-            <p className="text-white text-xs leading-tight truncate" style={{ fontWeight: 500 }}>{user?.name}</p>
-            <p className="text-white/40 text-[10px] leading-tight">{user?.storeName }</p>
+            <p className="text-white text-xs leading-tight truncate" style={{ fontWeight: 500 }}>{user?.name || 'Admin'}</p>
+            <p className="text-white/40 text-[10px] leading-tight truncate">{storeName}</p>
           </div>
         </div>
       </div>

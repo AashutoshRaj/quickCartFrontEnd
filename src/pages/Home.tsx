@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Bell, Search, ShoppingBag, ChevronRight, Plus, MapPin as Marker, ScanQrCode, Edit2 } from 'lucide-react';
+import { MapPin, Bell, Search, ShoppingBag, ChevronRight, Plus, MapPin as Marker, ScanQrCode, Edit2, Keyboard } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../types/index';
@@ -53,6 +53,8 @@ const deals: Deal[] = [
  */
 const Home: React.FC = (): React.ReactElement => {
   const navigate = useNavigate();
+  const [showProductIdInput, setShowProductIdInput] = useState(false);
+  const [productId, setProductId] = useState('');
   const { user } = useSelector((state: RootState) => state.auth);
   const { activeStore } = useSelector((state: RootState) => state.store);
   console.log('activeStore', activeStore);
@@ -60,6 +62,20 @@ const Home: React.FC = (): React.ReactElement => {
   const handleStoreNavigation = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
     navigate('/scan-store');
+  };
+
+  const handleScanProduct = (): void => {
+    if (activeStore) {
+      navigate('/product-scanner');
+    }
+  };
+
+  const handleProductIdSubmit = (): void => {
+    if (productId.trim() && activeStore) {
+      navigate(`/product/${productId}`, { state: { storeId: activeStore.storeId } });
+      setProductId('');
+      setShowProductIdInput(false);
+    }
   };
 
   return (
@@ -125,6 +141,73 @@ const Home: React.FC = (): React.ReactElement => {
             </Link>
           </div>
         </motion.div>
+
+        {/* Product Scan Section */}
+        {activeStore && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mt-6"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              {/* Scan Product QR Button */}
+              <button
+                onClick={handleScanProduct}
+                className="bg-white border-2 border-primary/20 p-4 rounded-[12px] shadow-sm hover:shadow-md hover:border-primary/40 transition-all active:scale-95 flex flex-col items-center gap-2"
+              >
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <ScanQrCode className="text-primary" size={24} />
+                </div>
+                <span className="text-on-surface font-poppins font-semibold text-sm">Scan Product</span>
+                <span className="text-secondary font-inter text-xs">QR Code</span>
+              </button>
+
+              {/* Manual Product ID Button */}
+              <button
+                onClick={() => setShowProductIdInput(!showProductIdInput)}
+                className="bg-white border-2 border-secondary/20 p-4 rounded-[12px] shadow-sm hover:shadow-md hover:border-secondary/40 transition-all active:scale-95 flex flex-col items-center gap-2"
+              >
+                <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center">
+                  <Keyboard className="text-secondary" size={24} />
+                </div>
+                <span className="text-on-surface font-poppins font-semibold text-sm">Enter Product</span>
+                <span className="text-secondary font-inter text-xs">ID (Test)</span>
+              </button>
+            </div>
+
+            {/* Product ID Input Modal */}
+            {showProductIdInput && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-3 bg-white p-4 rounded-[12px] shadow-md border border-outline/10"
+              >
+                <label className="block text-on-surface font-poppins font-semibold text-sm mb-2">
+                  Enter Product ID
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={productId}
+                    onChange={(e) => setProductId(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleProductIdSubmit()}
+                    placeholder="e.g., PROD-001"
+                    className="flex-1 px-3 py-2 border border-outline/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 font-inter text-sm"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleProductIdSubmit}
+                    disabled={!productId.trim()}
+                    className="px-4 py-2 bg-primary text-white rounded-lg font-inter font-semibold text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Go
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </motion.section>
+        )}
 
         {/* Categories Section */}
         <section className="mt-8 hidden">

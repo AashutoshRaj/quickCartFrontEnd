@@ -455,8 +455,32 @@ export interface BottomNavItemProps {
 }
 
 /**
- * ProductCard Component Types
+ * Product Types
  */
+export interface IProduct {
+  _id?: string;
+  id?: string;
+  name: string;
+  barcode?: string;
+  sku?: string;
+  brand?: string;
+  price: number;
+  costPrice?: number;
+  discountPrice?: number;
+  description?: string;
+  category: string;
+  unit?: string;
+  tax?: number;
+  currency?: string;
+  storeId?: string;
+  image?: string;
+  stock?: number;
+  status?: 'active' | 'inactive' | 'discontinued';
+  createdBy?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
+
 export interface Product {
   id?: string;
   name: string;
