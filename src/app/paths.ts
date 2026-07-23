@@ -23,6 +23,9 @@ export const PATHS = {
   PAYMENT_SUCCESS: '/payment-success',
   PAYMENT_CANCEL: '/payment-cancel',
 
+  // Test/Debug Routes
+  QR_TEST: '/qr-test',
+
   // Admin Routes
   ADMIN: '/admin',
   ADMIN_DASHBOARD: '/admin/dashboard',

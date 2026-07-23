@@ -118,21 +118,10 @@ export const useBarcodeScanner = (
             }
           }
         },
-        (error: Error) => {
-          /**
-           * Silently handle scanning errors (camera frame issues)
-           * These are expected during normal scanning on poor/empty frames
-           * Only report actual initialization/permission errors
-           */
-          const msg = (error?.message || '').toLowerCase();
-          const isFrameError = msg.includes('not found') ||
-                              msg.includes('indexsize') ||
-                              msg.includes('parse error') ||
-                              msg.includes('qr code');
-
-          if (onScanError && error && !isFrameError) {
-            onScanError(error);
-          }
+        () => {
+          // Silently ignore all frame parsing errors
+          // IndexSizeError, parse errors are normal during scanning
+          // Only actual permission/init errors should be caught
         }
       );
 

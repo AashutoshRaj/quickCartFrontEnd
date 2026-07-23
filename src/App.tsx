@@ -33,6 +33,7 @@ import OrderDetails from './pages/OrderDetails.tsx'
 import PaymentSuccess from './pages/PaymentSuccess.tsx'
 import PaymentCancel from './pages/PaymentCancel.tsx'
 import ExitGate from './pages/ExitGate.tsx'
+import QRTest from './pages/QRTest.tsx'
 import AdminApp from './AdminApp.tsx'
 
 // Initialize Interceptors
@@ -131,6 +132,7 @@ function AppContent(): ReactElement {
               <Route path={PATHS.ORDER_DETAILS} element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
               <Route path={PATHS.PAYMENT_SUCCESS} element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
               <Route path={PATHS.PAYMENT_CANCEL} element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+              <Route path={PATHS.QR_TEST} element={<QRTest />} />
               <Route path="/admin/*" element={<AdminApp />} />
               <Route path={PATHS.NOT_FOUND} element={<Navigate to={PATHS.ONBOARDING} replace />} />
             </Routes>

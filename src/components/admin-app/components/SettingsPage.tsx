@@ -139,7 +139,7 @@ export function SettingsPage() {
 
   // Form state - initialize with default, update when store profile loads
   const [formData, setFormData] = useState<StoreProfile>({ ...defaultStoreProfile });
-
+  console.log('Frontend: Initial formData state:', formData);
   // Initialize form when store profile loads
   useEffect(() => {
     if (storeProfile) {
