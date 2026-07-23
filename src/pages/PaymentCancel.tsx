@@ -1,6 +1,7 @@
 import React from 'react';
 import { XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PATHS } from '../app/paths';
 
 /**
  * Payment Cancel Page Component
@@ -18,7 +19,7 @@ const PaymentCancel: React.FC = (): React.ReactElement => {
         <p className="mt-3 text-sm text-secondary">
           The checkout was cancelled. Your cart is still available if you want to try again.
         </p>
-        <Link to="/cart" className="mt-6 inline-flex rounded-2xl bg-primary px-5 py-3 font-poppins font-semibold text-white">
+        <Link to={PATHS.CART} className="mt-6 inline-flex rounded-2xl bg-primary px-5 py-3 font-poppins font-semibold text-white">
           Return to Cart
         </Link>
       </div>

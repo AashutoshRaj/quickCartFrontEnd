@@ -5,19 +5,17 @@
 
 import type { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import apiClient from './axios.ts';
-import type { StoreState } from '../types/index';
 
 /**
  * Setup interceptors for axios client
  * Handles authentication token injection and error handling
  *
- * @param {StoreState} store - Redux store or state management store
  * @remarks
  * - Injects Authorization header with token from localStorage
  * - Handles 401 Unauthorized responses by clearing credentials
  * - Centralizes error logging and handling
  */
-export const setupInterceptors = (store: StoreState): void => {
+export const setupInterceptors = (): void => {
   /**
    * Request Interceptor
    * Adds authorization token to request headers

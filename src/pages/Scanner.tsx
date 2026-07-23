@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { ChevronLeft, Camera, AlertCircle, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import type { Product } from '../types/index';
+import type { Product, RootState } from '../types/index';
+import { PATHS } from '../app/paths';
 import { useBarcodeScanner } from '../hooks/products/useBarcodeScanner.ts';
 import { useBarcodeSearch } from '../hooks/products/useBarcodeSearch.ts';
 import { ScannerOverlay } from '../components/ScannerOverlay.tsx';
 import { ProductCard } from '../components/ProductCard.tsx';
+import ActiveStoreBanner from '../components/ActiveStoreBanner.tsx';
 import BottomNav from '../components/BottomNav.tsx';
 import { useAddToCart } from '../hooks/cart/useAddToCart.ts';
 
@@ -23,11 +26,13 @@ const Scanner: React.FC = (): React.ReactElement => {
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
   const [showProduct, setShowProduct] = useState<boolean>(false);
   const addToCartMutation = useAddToCart();
+  const activeStore = useSelector((state: RootState) => state.store.activeStore);
 
   // Barcode search hook (only enabled when barcode is scanned)
   const { data: product, isLoading: isSearching, error: searchError } = useBarcodeSearch(
-    scannedBarcode,
-    { enabled: !!scannedBarcode }
+    scannedBarcode || '',
+    activeStore?.storeId,
+    { enabled: !!scannedBarcode && !!activeStore?.storeId }
   );
 
   // Barcode scanner hook
@@ -49,13 +54,23 @@ const Scanner: React.FC = (): React.ReactElement => {
     }
   );
 
+  // Check if store is selected
+  useEffect(() => {
+    if (!activeStore?.storeId) {
+      toast.error('Please scan the store QR code before scanning products.');
+      navigate(PATHS.SCAN_STORE);
+    }
+  }, [activeStore, navigate]);
+
   // Initialize scanner on mount
   useEffect(() => {
-    initializeScanner();
+    if (activeStore?.storeId) {
+      initializeScanner();
+    }
     return () => {
       stopScanner();
     };
-  }, []);
+  }, [activeStore, initializeScanner, stopScanner]);
 
   // Handle product found
   useEffect(() => {
@@ -99,7 +114,7 @@ const Scanner: React.FC = (): React.ReactElement => {
         storeId: localStorage.getItem('activeStoreId') || 'default-store',
       });
       setTimeout(() => {
-        navigate('/cart');
+        navigate(PATHS.CART);
       }, 500);
     } catch (error) {
       // handled by mutation error toast
@@ -127,21 +142,32 @@ const Scanner: React.FC = (): React.ReactElement => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-black flex flex-col pb-24 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 via-black to-black flex flex-col pb-24 relative overflow-hidden">
+      {/* Active Store Banner */}
+      <ActiveStoreBanner />
+
       {/* Header */}
-      <header className="px-4 py-6 flex items-center justify-between relative z-20 bg-black/50 backdrop-blur-md border-b border-white/10">
+      <header className="w-full px-4 py-6 flex items-center justify-between relative z-20 bg-black/50 backdrop-blur-md border-b border-white/10">
         <button
           onClick={handleNavigateBack}
           className="bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-xl border border-white/20 transition-all active:scale-95"
         >
           <ChevronLeft size={24} className="text-white" />
         </button>
-        <h1 className="text-white font-bold text-lg">Scan Product</h1>
+        <h1 className="text-white font-bold text-lg">Scan Product Barcode</h1>
         <div className="w-10" /> {/* Spacer for alignment */}
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-end relative overflow-hidden">
+      <main className="flex-1 w-full flex flex-col items-center justify-end relative overflow-hidden">
+        {!showProduct && !isInitialized && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
+              <p className="text-white/70 text-sm">Initializing camera...</p>
+            </div>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           {/* Scanner View */}
           {!showProduct ? (
@@ -155,11 +181,11 @@ const Scanner: React.FC = (): React.ReactElement => {
             >
               {/* Scanner Container */}
               <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden bg-black border-2 border-white/20 shadow-2xl">
-                {/* Camera Feed */}
+                {/* Camera Feed - MUST stay in DOM for Html5Qrcode initialization */}
                 <div
                   id="scanner-container"
                   className="w-full h-full"
-                  style={{ display: isInitialized ? 'block' : 'none' }}
+                  style={{ display: 'block', visibility: isInitialized ? 'visible' : 'hidden' }}
                 />
 
                 {/* Placeholder when initializing */}
@@ -217,7 +243,7 @@ const Scanner: React.FC = (): React.ReactElement => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-center space-y-3"
+                  className="text-center space-y-3 px-4"
                 >
                   <motion.div
                     animate={{ y: [-5, 5, -5] }}
@@ -229,23 +255,38 @@ const Scanner: React.FC = (): React.ReactElement => {
                     Position barcode in frame
                   </p>
                   <p className="text-white/50 text-xs">
-                    Supports EAN, UPC, Code-128 and QR codes
+                    Scan product barcode to add to cart
                   </p>
                 </motion.div>
               )}
 
-              {/* Error Display */}
-              {(scannerError || searchError) && (
+              {scannerError && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-lg p-4 max-w-md w-full"
+                  className="flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 max-w-md w-full px-4"
+                >
+                  <AlertCircle size={20} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-yellow-300 text-sm font-semibold">Camera Not Available</p>
+                    <p className="text-yellow-200/80 text-xs mt-1">
+                      Please grant camera permission or type barcode manually
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {searchError && !scannerError && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-lg p-4 max-w-md w-full px-4"
                 >
                   <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-red-300 text-sm font-semibold">Error</p>
+                    <p className="text-red-300 text-sm font-semibold">Product Not Found</p>
                     <p className="text-red-200/80 text-xs mt-1">
-                      {scannerError || 'Unable to find product. Please try again.'}
+                      Product not available in this store. Try another barcode.
                     </p>
                   </div>
                 </motion.div>

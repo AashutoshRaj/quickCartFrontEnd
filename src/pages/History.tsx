@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { CartItem, Order } from '../types/index';
+import { PATHS, getOrderDetailsPath } from '../app/paths';
 import BottomNav from '../components/BottomNav.tsx';
 import { useOrders, useDownloadInvoice } from '../queries/ordersQueries.ts';
 
@@ -127,7 +128,7 @@ const History: React.FC = (): React.ReactElement => {
   };
 
   const handleViewDetails = (orderId: string): void => {
-    navigate(`/history/${orderId}`);
+    navigate(getOrderDetailsPath(orderId));
   };
 
   const handleNavigateBack = (e: React.MouseEvent<HTMLButtonElement>): void => {
@@ -292,7 +293,7 @@ const History: React.FC = (): React.ReactElement => {
               Your completed purchases will appear here.
             </p>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate(PATHS.HOME)}
               className="px-6 py-2.5 bg-primary text-white rounded-xl font-inter font-semibold text-sm hover:bg-primary/90 transition-colors"
             >
               Continue Shopping

@@ -7,17 +7,18 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { History, House, QrCode, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '../hooks/cart/useCart.ts';
+import { PATHS } from '../app/paths';
 import type { NavItem, BottomNavItemProps } from '../types/index';
 
 /**
  * Navigation items configuration
  */
 const navItems: NavItem[] = [
-  { to: '/', label: 'Home', icon: House },
-  { to: '/history', label: 'History', icon: History },
-  { to: '/scanner', label: 'Scan', icon: QrCode, featured: true },
-  { to: '/cart', label: 'Cart', icon: ShoppingCart },
-  { to: '/profile', label: 'Profile', icon: User },
+  { to: PATHS.HOME, label: 'Home', icon: House },
+  { to: PATHS.HISTORY, label: 'History', icon: History },
+  { to: PATHS.SCANNER, label: 'Scan', icon: QrCode, featured: true },
+  { to: PATHS.CART, label: 'Cart', icon: ShoppingCart },
+  { to: PATHS.PROFILE, label: 'Profile', icon: User },
 ];
 
 /**
@@ -62,7 +63,7 @@ export default function BottomNav(): React.ReactElement {
             key={item.to}
             item={item}
             active={pathname === item.to}
-            cartCount={item.to === '/cart' ? cartCount : 0}
+            cartCount={item.to === PATHS.CART ? cartCount : 0}
           />
         ))}
       </div>
@@ -131,7 +132,7 @@ function BottomNavItem({
           />
         </span>
         {/* Cart badge */}
-        {item.to === '/cart' && cartCount > 0 && (
+        {item.to === PATHS.CART && cartCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white text-center">
             {cartCount}
           </span>

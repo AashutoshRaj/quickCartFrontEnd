@@ -3,6 +3,7 @@ import { Html5QrcodeScanner } from 'html5-qrcode';
 import { CheckCircle2, AlertCircle, LogOut, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { PATHS } from '../app/paths';
 
 interface OrderItem {
   name?: string;
@@ -119,7 +120,7 @@ const ExitGate: React.FC = (): React.ReactElement => {
       toast.success('Exit confirmed! Thank you for shopping.');
 
       setTimeout(() => {
-        navigate('/');
+        navigate(PATHS.HOME);
       }, 2000);
     } catch (error) {
       console.error('Exit error:', error);

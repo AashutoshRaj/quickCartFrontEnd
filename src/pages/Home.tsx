@@ -4,6 +4,7 @@ import { MapPin, Bell, Search, ShoppingBag, ChevronRight, Plus, MapPin as Marker
 import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../types/index';
+import { PATHS } from '../app/paths';
 import BottomNav from '../components/BottomNav.tsx';
 
 interface Category {
@@ -61,12 +62,12 @@ const Home: React.FC = (): React.ReactElement => {
 
   const handleStoreNavigation = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
-    navigate('/scan-store');
+    navigate(PATHS.SCAN_STORE);
   };
 
   const handleScanProduct = (): void => {
     if (activeStore) {
-      navigate('/product-scanner');
+      navigate(PATHS.SCANNER);
     }
   };
 
@@ -134,7 +135,7 @@ const Home: React.FC = (): React.ReactElement => {
               </p>
             </div>
             <Link
-              to={activeStore ? '/scanner' : '/scan-store'}
+              to={activeStore ? PATHS.SCANNER : PATHS.SCAN_STORE}
               className="flex-shrink-0 bg-white p-4 rounded-2xl hover:shadow-lg transition-shadow"
             >
               <div className="text-2xl"><ScanQrCode /></div>

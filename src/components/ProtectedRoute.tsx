@@ -7,6 +7,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState, ProtectedRouteProps } from '../types/index';
+import { PATHS } from '../app/paths';
 
 /**
  * ProtectedRoute Component
@@ -41,7 +42,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }): React.Reac
   if (!isAuthenticated) {
     return (
       <Navigate
-        to="/login"
+        to={PATHS.LOGIN}
         state={{ from: location }}
         replace
       />

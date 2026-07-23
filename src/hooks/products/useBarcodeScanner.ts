@@ -59,10 +59,14 @@ export const useBarcodeScanner = (
    * Initialize barcode scanner with camera access
    */
   const initializeScanner = useCallback(async (): Promise<void> => {
-    if (qrcodeRef.current || isInitialized) return;
+    if (qrcodeRef.current) {
+      console.log('Scanner already initialized');
+      return;
+    }
 
     try {
       setError(null);
+      console.log('Starting scanner initialization...');
 
       /**
        * Create scanner instance targeting scanner-container element
@@ -100,8 +104,6 @@ export const useBarcodeScanner = (
         { facingMode: 'environment' },
         config,
         (decodedText: string) => {
-          if (!isScanning) return;
-
           const trimmedBarcode = decodedText.trim();
 
           /**
@@ -119,9 +121,16 @@ export const useBarcodeScanner = (
         (error: Error) => {
           /**
            * Silently handle scanning errors (camera frame issues)
-           * Only call error handler for actual errors, not "Not found" messages
+           * These are expected during normal scanning on poor/empty frames
+           * Only report actual initialization/permission errors
            */
-          if (onScanError && error && !error.message?.includes('Not found')) {
+          const msg = (error?.message || '').toLowerCase();
+          const isFrameError = msg.includes('not found') ||
+                              msg.includes('indexsize') ||
+                              msg.includes('parse error') ||
+                              msg.includes('qr code');
+
+          if (onScanError && error && !isFrameError) {
             onScanError(error);
           }
         }
@@ -129,12 +138,13 @@ export const useBarcodeScanner = (
 
       setIsScanning(true);
       setIsInitialized(true);
+      console.log('Scanner initialized successfully');
     } catch (err) {
       const errorMessage = (err as Error)?.message || 'Failed to initialize camera';
       setError(errorMessage);
       console.error('Scanner initialization error:', err);
     }
-  }, [isInitialized, isScanning, onScanSuccess, onScanError]);
+  }, [onScanSuccess, onScanError]);
 
   /**
    * Stop scanner and cleanup resources
@@ -142,14 +152,27 @@ export const useBarcodeScanner = (
   const stopScanner = useCallback(async (): Promise<void> => {
     if (qrcodeRef.current) {
       try {
-        await qrcodeRef.current.stop();
-        await qrcodeRef.current.clear();
+        try {
+          await qrcodeRef.current.stop();
+        } catch (stopErr) {
+          // Ignore "not running" errors on stop
+          if (!(stopErr as Error).message?.includes('not running')) {
+            throw stopErr;
+          }
+        }
+        try {
+          await qrcodeRef.current.clear();
+        } catch (clearErr) {
+          console.debug('Clear error (ignored):', clearErr);
+        }
         qrcodeRef.current = null;
         setIsScanning(false);
         setIsInitialized(false);
         scannerRef.current = null;
       } catch (err) {
         console.error('Error stopping scanner:', err);
+        // Force cleanup even if stop fails
+        qrcodeRef.current = null;
       }
     }
   }, []);
@@ -179,7 +202,13 @@ export const useBarcodeScanner = (
       if (qrcodeRef.current) {
         qrcodeRef.current
           .stop()
-          .catch((err) => console.error('Cleanup error:', err));
+          .then(() => qrcodeRef.current?.clear())
+          .catch((err) => {
+            // Ignore "not running" errors
+            if (!(err as Error).message?.includes('not running')) {
+              console.error('Cleanup error:', err);
+            }
+          });
       }
     };
   }, []);

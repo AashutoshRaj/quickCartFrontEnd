@@ -11,6 +11,9 @@ import { store } from './store/store.ts';
 import queryClient from './api/queryClient.ts';
 import { setupInterceptors } from './api/interceptors.ts';
 
+// Routing
+import { PATHS } from './app/paths';
+
 // Hooks
 import { useInitializeAuth } from './hooks/useInitializeAuth.ts';
 
@@ -33,7 +36,7 @@ import ExitGate from './pages/ExitGate.tsx'
 import AdminApp from './AdminApp.tsx'
 
 // Initialize Interceptors
-setupInterceptors(store);
+setupInterceptors();
 
 /**
  * App Content Component
@@ -51,9 +54,15 @@ function AppContent(): ReactElement {
   }, []);
 
   const location = useLocation();
-  const pageQR = ["/scanner", "/scan-store", "/cart", "/history", "/profile", "/login"].includes(
-    location.pathname
-  ) || location.pathname.match(/^\/history\/[^\/]+$/) !== null;
+  const pageQR = [
+    PATHS.SCANNER,
+    PATHS.SCAN_STORE,
+    PATHS.CART,
+    PATHS.HISTORY,
+    PATHS.PROFILE,
+    PATHS.LOGIN,
+  ].some((path) => path === location.pathname) ||
+    location.pathname.match(/^\/history\/[^\/]+$/) !== null;
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -110,20 +119,20 @@ function AppContent(): ReactElement {
             className="flex-1 flex flex-col"
           >
             <Routes>
-              <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-              <Route path="/scanner" element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
-              <Route path="/scan-store" element={<ProtectedRoute><ScanStore /></ProtectedRoute>} />
-              <Route path="/exit-gate" element={<ExitGate />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-              <Route path="/history/:orderId" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
-              <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
-              <Route path="/payment-cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+              <Route path={PATHS.HOME} element={<ProtectedRoute><Home /></ProtectedRoute>} />
+              <Route path={PATHS.CART} element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+              <Route path={PATHS.SCANNER} element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
+              <Route path={PATHS.SCAN_STORE} element={<ProtectedRoute><ScanStore /></ProtectedRoute>} />
+              <Route path={PATHS.EXIT_GATE} element={<ExitGate />} />
+              <Route path={PATHS.ONBOARDING} element={<Onboarding />} />
+              <Route path={PATHS.LOGIN} element={<Login />} />
+              <Route path={PATHS.PROFILE} element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path={PATHS.HISTORY} element={<ProtectedRoute><History /></ProtectedRoute>} />
+              <Route path={PATHS.ORDER_DETAILS} element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
+              <Route path={PATHS.PAYMENT_SUCCESS} element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+              <Route path={PATHS.PAYMENT_CANCEL} element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
               <Route path="/admin/*" element={<AdminApp />} />
-              <Route path="*" element={<Navigate to="/onboarding" replace />} />
+              <Route path={PATHS.NOT_FOUND} element={<Navigate to={PATHS.ONBOARDING} replace />} />
             </Routes>
           </motion.div>
         )}

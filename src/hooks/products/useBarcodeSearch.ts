@@ -14,6 +14,7 @@ import type { BarcodeSearchOptions } from '../../types/index';
  * Only executes query when barcode is provided and non-empty.
  *
  * @param {string} barcode - Barcode to search for (empty or falsy disables query)
+ * @param {string} [storeId] - Store ID for store-scoped product validation
  * @param {BarcodeSearchOptions} [options] - Additional React Query options
  * @returns {UseQueryResult} Query result with product data
  * @returns {unknown | undefined} data - Product information if found
@@ -27,19 +28,21 @@ import type { BarcodeSearchOptions } from '../../types/index';
  * - Garbage collection at 10 minutes
  * - Retries once on failure
  * - Trims barcode before searching
+ * - Validates product belongs to provided storeId
  *
  * @example
- * const { data: product, isLoading } = useBarcodeSearch('1234567890');
+ * const { data: product, isLoading } = useBarcodeSearch('1234567890', 'store-123');
  * if (isLoading) return <div>Searching...</div>;
  * if (!data) return <div>Product not found</div>;
  * return <div>{data.name}</div>;
  */
 export const useBarcodeSearch = (
   barcode: string,
+  storeId?: string,
   options: BarcodeSearchOptions = {}
 ): UseQueryResult<unknown, Error> => {
   return useQuery({
-    queryKey: ['product', 'barcode', barcode],
+    queryKey: ['product', 'barcode', barcode, storeId],
     queryFn: async (): Promise<unknown> => {
       /**
        * Validate barcode input
@@ -49,9 +52,11 @@ export const useBarcodeSearch = (
       }
 
       /**
-       * Fetch product by barcode
+       * Fetch product by barcode with store ID validation
        */
-      const response = await apiClient.get(`/products/barcode/${barcode.trim()}`);
+      const response = await apiClient.get(`/products/barcode/${barcode.trim()}`, {
+        params: storeId ? { storeId } : {},
+      });
 
       /**
        * Extract product from response (supports multiple response formats)

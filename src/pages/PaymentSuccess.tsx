@@ -3,6 +3,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
+import { PATHS } from '../app/paths';
 import cartService from '../api/services/cartService.ts';
 import apiClient from '../api/axios.ts';
 
@@ -56,7 +57,7 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
 
   const handleDone = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
-    navigate('/');
+    navigate(PATHS.HOME);
   };
 
   const handleViewReceipt = (e: React.MouseEvent<HTMLButtonElement>): void => {

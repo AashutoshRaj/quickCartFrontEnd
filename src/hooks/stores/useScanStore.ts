@@ -5,7 +5,7 @@
 
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import apiClient from '../../api/axios.ts';
-import type { ScanStoreOptions } from '../../types/index';
+import type { ScanStoreOptions, ActiveStore } from '../../types/index';
 
 /**
  * Hook to fetch store information by store ID
@@ -37,10 +37,10 @@ import type { ScanStoreOptions } from '../../types/index';
 export const useScanStore = (
   storeId: string,
   options: ScanStoreOptions = {}
-): UseQueryResult<unknown, Error> => {
+): UseQueryResult<ActiveStore | undefined, Error> => {
   return useQuery({
     queryKey: ['store', 'scan', storeId],
-    queryFn: async (): Promise<unknown> => {
+    queryFn: async (): Promise<ActiveStore | undefined> => {
       /**
        * Validate store ID input
        */
@@ -55,10 +55,12 @@ export const useScanStore = (
       console.log('gettingstoreidinfo', response);
 
       /**
-       * Extract store from response (supports multiple response formats)
+       * Extract store from response
+       * API returns: { status: "success", data: { store: {...} } }
        */
-      return (response as Record<string, unknown>).data?.data?.store ||
-        (response as Record<string, unknown>).data?.store;
+      const apiData = response.data as Record<string, any>;
+      const store = apiData?.data?.store as ActiveStore | undefined;
+      return store;
     },
     enabled: !!storeId && storeId.trim().length > 0,
     staleTime: 1000 * 60 * 5, // 5 minutes

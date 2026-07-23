@@ -3,6 +3,7 @@ import { useForm, useWatch, FieldValues } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ShoppingBag, Loader2 } from 'lucide-react';
+import { PATHS } from '../app/paths';
 import {
   useCheckPhone,
   useCompleteRegistration,
@@ -102,7 +103,7 @@ const Login: React.FC = (): React.ReactElement => {
 
       if ((response as OTPVerifyResponse).success || (response as OTPVerifyResponse).status === 'success') {
         toast.success('Login successful 🎉');
-        navigate('/');
+        navigate(PATHS.HOME);
       }
     } catch (error) {
       console.error(error);

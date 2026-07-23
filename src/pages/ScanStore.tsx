@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { ChevronLeft, Camera, AlertCircle, Loader, MapPin, Phone, DollarSign, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import type { ActiveStore } from '../types/index';
+import type { ActiveStore, RootState } from '../types/index';
+import { PATHS } from '../app/paths';
 import { useBarcodeScanner } from '../hooks/products/useBarcodeScanner.ts';
 import { useScanStore } from '../hooks/stores/useScanStore.ts';
 import { ScannerOverlay } from '../components/ScannerOverlay.tsx';
+import StoreSwitchConfirmDialog from '../components/StoreSwitchConfirmDialog.tsx';
 import { setActiveStore } from '../store/slices/storeSlice.ts';
 
 /**
@@ -20,18 +22,23 @@ import { setActiveStore } from '../store/slices/storeSlice.ts';
 const ScanStore: React.FC = (): React.ReactElement => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const activeStore = useSelector((state: RootState) => state.store.activeStore);
   const [scannedStoreId, setScannedStoreId] = useState<string | null>(null);
   const [manualStoreId, setManualStoreId] = useState<string>('');
   const [showStoreInfo, setShowStoreInfo] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
+  const [pendingStore, setPendingStore] = useState<ActiveStore | null>(null);
   const hasShownStoreRef = useRef<boolean>(false);
 
+  console.log('ScanStore component mounted');
+
   const { data: store, isLoading: isSearching, error: searchError } = useScanStore(
-    scannedStoreId,
+    scannedStoreId || '',
     { enabled: !!scannedStoreId }
   );
 
-  console.log('storeInfoooooo', store);
+  console.log('storeInfoooooo', store, 'scannedStoreId', scannedStoreId, 'isSearching', isSearching, 'error', searchError);
   const {
     isInitialized,
     isScanning,
@@ -41,6 +48,7 @@ const ScanStore: React.FC = (): React.ReactElement => {
     restartScanner,
   } = useBarcodeScanner(
     (storeId: string) => {
+      console.log('Scanner success:', storeId);
       setScannedStoreId(storeId);
       toast.success(`Store ID scanned: ${storeId}`);
     },
@@ -49,9 +57,13 @@ const ScanStore: React.FC = (): React.ReactElement => {
     }
   );
 
+  console.log('Scanner state:', { isInitialized, isScanning, scannerError });
+
   useEffect(() => {
-    initializeScanner();
+    console.log('Initializing scanner...');
+    initializeScanner().then(() => console.log('Scanner initialized')).catch(err => console.error('Init error:', err));
     return () => {
+      console.log('Stopping scanner...');
       stopScanner();
     };
   }, [initializeScanner, stopScanner]);
@@ -100,18 +112,47 @@ const ScanStore: React.FC = (): React.ReactElement => {
   const handleContinueShopping = async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
     e.preventDefault();
     if (store && !isNavigating) {
-      setIsNavigating(true);
-      try {
-        await Promise.race([stopScanner(), new Promise(r => setTimeout(r, 500))]);
-        console.log('Dispatching store to Redux:', store);
-        dispatch(setActiveStore(store as ActiveStore));
-        toast.success('Store session activated');
-        navigate('/');
-      } catch (error) {
-        console.error('Error saving store:', error);
-        navigate('/');
+      // Check if switching stores with existing cart
+      if (activeStore?.storeId && activeStore.storeId !== (store as ActiveStore).storeId) {
+        setPendingStore(store as ActiveStore);
+        setShowConfirmDialog(true);
+        return;
       }
+
+      await proceedWithStoreSwitch(store as ActiveStore);
     }
+  };
+
+  const proceedWithStoreSwitch = async (newStore: ActiveStore): Promise<void> => {
+    setIsNavigating(true);
+    try {
+      await Promise.race([stopScanner(), new Promise(r => setTimeout(r, 500))]);
+      console.log('Dispatching store to Redux:', newStore);
+      dispatch(setActiveStore(newStore));
+      // Clear cart in localStorage
+      localStorage.removeItem('cartItems');
+      localStorage.removeItem('cart');
+      toast.success('Store session activated');
+      navigate(PATHS.HOME);
+    } catch (error) {
+      console.error('Error saving store:', error);
+      navigate(PATHS.HOME);
+    } finally {
+      setIsNavigating(false);
+    }
+  };
+
+  const handleConfirmSwitch = (): void => {
+    if (pendingStore) {
+      proceedWithStoreSwitch(pendingStore);
+      setShowConfirmDialog(false);
+      setPendingStore(null);
+    }
+  };
+
+  const handleCancelSwitch = (): void => {
+    setShowConfirmDialog(false);
+    setPendingStore(null);
   };
 
   const handleScanAnother = async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
@@ -153,21 +194,38 @@ const ScanStore: React.FC = (): React.ReactElement => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-black flex flex-col pb-24 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 via-black to-black flex flex-col pb-24 relative overflow-hidden">
+      {/* Store Switch Confirmation Dialog */}
+      <StoreSwitchConfirmDialog
+        isOpen={showConfirmDialog}
+        onConfirm={handleConfirmSwitch}
+        onCancel={handleCancelSwitch}
+        isLoading={isNavigating}
+      />
+
       {/* Header */}
-      <header className="px-4 py-6 flex items-center justify-between relative z-20 bg-black/50 backdrop-blur-md border-b border-white/10">
+      <header className="w-full px-4 py-6 flex items-center justify-between relative z-20 bg-black/50 backdrop-blur-md border-b border-white/10">
         <button
           onClick={handleBackButton}
           className="bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-xl border border-white/20 transition-all active:scale-95"
         >
           <ChevronLeft size={24} className="text-white" />
         </button>
-        <h1 className="text-white font-bold text-lg">Scan Store</h1>
+        <h1 className="text-white font-bold text-lg">Scan Store QR Code</h1>
         <div className="w-10" />
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-end relative overflow-hidden bg-gradient-to-b from-gray-900 via-black to-black">
+      <main className="flex-1 w-full flex flex-col items-center justify-end relative overflow-hidden bg-gradient-to-b from-gray-900 via-black to-black">
+        {!showStoreInfo && !isInitialized && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
+              <p className="text-white/70 text-sm">Initializing camera...</p>
+            </div>
+          </div>
+        )}
+
         <AnimatePresence mode="wait" onExitComplete={() => null}>
           {/* Scanner View */}
           {!showStoreInfo ? (
@@ -184,7 +242,7 @@ const ScanStore: React.FC = (): React.ReactElement => {
                 <div
                   id="scanner-container"
                   className="w-full h-full"
-                  style={{ display: isInitialized ? 'block' : 'none' }}
+                  style={{ display: 'block', visibility: isInitialized ? 'visible' : 'hidden' }}
                 />
 
                 {!isInitialized && (
@@ -227,7 +285,7 @@ const ScanStore: React.FC = (): React.ReactElement => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-center space-y-3"
+                  className="text-center space-y-3 px-4"
                 >
                   <motion.div
                     animate={{ y: [-5, 5, -5] }}
@@ -236,25 +294,41 @@ const ScanStore: React.FC = (): React.ReactElement => {
                     <Camera size={32} className="mx-auto text-white/60" />
                   </motion.div>
                   <p className="text-white/70 text-sm font-medium">
-                    Position QR code in frame
+                    Position store QR code in frame
                   </p>
                   <p className="text-white/50 text-xs">
-                    Scan the store QR code to begin shopping
+                    Or enter Store ID manually below
                   </p>
                 </motion.div>
               )}
 
-              {(scannerError || searchError) && (
+              {scannerError && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-lg p-4 max-w-md w-full"
+                  className="flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 max-w-md w-full px-4"
+                >
+                  <AlertCircle size={20} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-yellow-300 text-sm font-semibold">Camera Not Available</p>
+                    <p className="text-yellow-200/80 text-xs mt-1">
+                      Please grant camera permission or use manual entry below
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {searchError && !scannerError && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-lg p-4 max-w-md w-full px-4"
                 >
                   <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-red-300 text-sm font-semibold">Error</p>
+                    <p className="text-red-300 text-sm font-semibold">Store Not Found</p>
                     <p className="text-red-200/80 text-xs mt-1">
-                      {scannerError || 'Unable to find store. Please try again.'}
+                      {(searchError as any)?.response?.data?.message || 'Unable to find store. Check Store ID and try again.'}
                     </p>
                   </div>
                 </motion.div>

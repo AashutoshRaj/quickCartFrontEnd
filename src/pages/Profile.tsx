@@ -3,6 +3,7 @@ import { User, CreditCard, Globe, Settings, Bell, ChevronRight, LogOut, Shopping
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, UserProfile, ProfileImage } from '../types/index';
+import { PATHS } from '../app/paths';
 import { logout } from '../store/slices/authSlice.ts';
 import { signOutUser } from '../utils/firebaseAuth.ts';
 import { getUserProfile, updateLanguage, updateNotifications, deletePaymentMethod, addPaymentMethod } from '../api/userApi.ts';
@@ -171,7 +172,7 @@ const Profile: React.FC = (): React.ReactElement => {
       console.error('Error signing out from Firebase:', error);
     } finally {
       dispatch(logout());
-      navigate('/login');
+      navigate(PATHS.LOGIN);
     }
   };
 

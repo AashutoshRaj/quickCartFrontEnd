@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Smartphone, CreditCard, ChevronRight } from 'lucide-react';
+import { PATHS } from '../app/paths';
 
 /**
  * Onboarding Page Component
@@ -63,7 +64,7 @@ const Onboarding: React.FC = (): React.ReactElement => {
         </div>
 
         <Link
-          to="/login"
+          to={PATHS.LOGIN}
           className="w-full bg-primary flex items-center justify-center gap-3 py-5 rounded-2xl shadow-xl hover:bg-primary/90 transition-all text-white font-poppins font-bold text-lg group"
         >
           Get Started
