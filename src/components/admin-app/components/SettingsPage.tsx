@@ -48,12 +48,6 @@ interface StoreProfile {
   status?: 'active' | 'inactive' | 'closed';
 }
 
-interface UserData {
-  _id?: string;
-  name?: string;
-  email?: string;
-  phoneNumber?: string;
-}
 
 // Default empty store profile
 const defaultStoreProfile: StoreProfile = {
@@ -72,21 +66,25 @@ const defaultStoreProfile: StoreProfile = {
 };
 
 // API Calls
-const fetchUserProfile = async (): Promise<UserData> => {
-  const res = await fetch('/api/v1/users/profile');
-  if (!res.ok) throw new Error('Failed to fetch user profile');
-  const data = await res.json();
-  return data.data || data;
-};
-
 const fetchStoreProfile = async (): Promise<StoreProfile> => {
   const res = await fetch('/api/v1/stores/profile');
   if (res.status === 404) {
+    console.warn('Store profile not found (404), using defaults');
     return { ...defaultStoreProfile };
   }
-  if (!res.ok) throw new Error('Failed to fetch store profile');
+  if (!res.ok) {
+    console.error('Failed to fetch store profile:', res.status);
+    throw new Error('Failed to fetch store profile');
+  }
+
   const data = await res.json();
-  return data.data?.store || data;
+  console.log('Raw API response:', data);
+
+  // Extract store from response
+  const store = data.data?.store || data.store || data;
+  console.log('Extracted store data:', store);
+
+  return store as StoreProfile;
 };
 
 const saveStoreProfile = async (profile: Partial<StoreProfile>): Promise<StoreProfile> => {
@@ -122,49 +120,45 @@ export function SettingsPage() {
   const queryClient = useQueryClient();
   const invalidateStoreProfile = useInvalidateStoreProfile();
 
-  // Fetch user profile
-  const { data: userData, isLoading: userLoading } = useQuery({
-    queryKey: ['userProfile'],
-    queryFn: fetchUserProfile,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  // Fetch store profile
-  const { data: storeProfile, isLoading: storeLoading } = useQuery({
+  // Fetch store profile - always enabled to ensure data is available
+  const { data: storeProfile, isLoading: storeLoading, error: storeError } = useQuery({
     queryKey: ['storeProfile'],
     queryFn: fetchStoreProfile,
-    enabled: active === 'store',
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
+  console.log('Store Profile loaded:', storeProfile);
+
   // Form state - initialize with default, update when store profile loads
-  const [formData, setFormData] = useState<StoreProfile>({ ...defaultStoreProfile });
-  console.log('Frontend: Initial formData state:', formData);
-  // Initialize form when store profile loads
+  const [formData, setFormData] = useState<StoreProfile>(() => {
+    return { ...defaultStoreProfile };
+  });
+
+  // Initialize form with store profile when it loads
   useEffect(() => {
     if (storeProfile) {
-      const initialData = {
-        ...storeProfile,
-        // Ensure email comes from user data, not form
-        email: userData?.email || storeProfile.email || '',
-      };
-
-      console.log('Frontend: Initializing formData with storeProfile:', {
-        name: initialData.name,
-        city: initialData.city,
-        state: initialData.state,
-        country: initialData.country,
-        postalCode: initialData.postalCode,
-        description: initialData.description,
-        email: initialData.email,
-        phoneNumber: initialData.phoneNumber,
+      console.log('Setting formData with storeProfile:', {
+        name: storeProfile.name,
+        email: storeProfile.email,
+        phoneNumber: storeProfile.phoneNumber,
       });
 
+      const initialData: StoreProfile = {
+        ...defaultStoreProfile,
+        ...storeProfile,
+        name: storeProfile.name || '',
+        email: storeProfile.email || '',
+        phoneNumber: storeProfile.phoneNumber || '',
+        address: storeProfile.address || '',
+      };
+
+      console.log('Initial data to set:', initialData);
       setFormData(initialData);
       setHasChanges(false);
       setLogoPreview(storeProfile.logo || null);
     }
-  }, [storeProfile, userData]);
+  }, [storeProfile]);
 
   // Save mutation
   const saveMutation = useMutation({
@@ -252,8 +246,7 @@ export function SettingsPage() {
     if (!formData.phoneNumber?.trim()) {
       errors.push('Phone number is required');
     }
-    // Email is auto-filled, just check it exists
-    if (!userData?.email && !formData.email?.trim()) {
+    if (!formData.email?.trim()) {
       errors.push('Email is required');
     }
 
@@ -270,29 +263,11 @@ export function SettingsPage() {
 
     const dataToSave: Partial<StoreProfile> = {
       ...formData,
-      // Always use user's email for security
-      email: userData?.email || formData.email,
     };
 
     // Remove _id and storeId to avoid conflicts
     delete dataToSave._id;
     delete dataToSave.storeId;
-
-    // Debug: log what we're sending
-    console.log('Frontend: Sending data to backend:', {
-      name: dataToSave.name,
-      email: dataToSave.email,
-      phoneNumber: dataToSave.phoneNumber,
-      address: dataToSave.address,
-      city: dataToSave.city,
-      state: dataToSave.state,
-      country: dataToSave.country,
-      postalCode: dataToSave.postalCode,
-      description: dataToSave.description,
-      currency: dataToSave.currency,
-      timezone: dataToSave.timezone,
-      logo: dataToSave.logo ? 'URL set' : 'No logo',
-    });
 
     saveMutation.mutate(dataToSave);
   };
@@ -375,7 +350,7 @@ export function SettingsPage() {
     toast.success('Store link copied to clipboard');
   };
 
-  const isLoading = userLoading || storeLoading;
+  const isLoading = storeLoading;
   const isSaving = saveMutation.isPending;
   const isGeneratingQR = qrMutation.isPending;
 
@@ -418,6 +393,14 @@ export function SettingsPage() {
                     <p className="text-gray-600">Loading store profile...</p>
                   </div>
                 </div>
+              ) : storeError ? (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800">Error loading store profile</p>
+                    <p className="text-xs text-red-700 mt-1">{storeError instanceof Error ? storeError.message : 'Failed to load store profile'}</p>
+                  </div>
+                </div>
               ) : (
                 <>
                   {/* Unsaved Changes Warning */}
@@ -442,19 +425,19 @@ export function SettingsPage() {
                     <div className="space-y-4">
                       <h4 className="text-sm font-medium text-gray-700">Basic Details</h4>
                       <div className="grid grid-cols-2 gap-4">
-                        {/* Store Name */}
+                        {/* Store Name - Read Only */}
                         <div>
                           <label className="block text-xs text-gray-600 mb-2" style={{ fontWeight: 500 }}>
                             Store Name <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="text"
-                            name="name"
                             value={formData.name}
-                            onChange={handleInputChange}
+                            disabled
                             placeholder="e.g., John's Retail Store"
-                            className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
+                            className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                           />
+                          <p className="text-xs text-gray-400 mt-1.5">Set during account creation. Contact support to change.</p>
                         </div>
 
                         {/* Email - Read Only */}
@@ -464,15 +447,15 @@ export function SettingsPage() {
                           </label>
                           <input
                             type="email"
-                            value={userData?.email || formData.email || ''}
+                            value={formData.email || ''}
                             disabled
                             placeholder="your@email.com"
                             className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                           />
-                          <p className="text-xs text-gray-400 mt-1.5">Auto-filled from your account. Contact support to change.</p>
+                          <p className="text-xs text-gray-400 mt-1.5">Set during account creation. Contact support to change.</p>
                         </div>
 
-                        {/* Phone Number - Editable */}
+                        {/* Phone Number - Editable if empty, Read Only if filled */}
                         <div>
                           <label className="block text-xs text-gray-600 mb-2" style={{ fontWeight: 500 }}>
                             Phone Number <span className="text-red-500">*</span>
@@ -481,10 +464,20 @@ export function SettingsPage() {
                             type="tel"
                             name="phoneNumber"
                             value={formData.phoneNumber}
-                            onChange={handleInputChange}
+                            onChange={formData.phoneNumber ? undefined : handleInputChange}
+                            disabled={!!formData.phoneNumber}
                             placeholder="e.g., +1 (555) 123-4567"
-                            className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
+                            className={`w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition ${
+                              formData.phoneNumber
+                                ? 'bg-gray-50 text-gray-600 cursor-not-allowed'
+                                : 'focus:border-green-400 focus:ring-1 focus:ring-green-200'
+                            }`}
                           />
+                          <p className="text-xs text-gray-400 mt-1.5">
+                            {formData.phoneNumber
+                              ? 'Set during account creation. Contact support to change.'
+                              : 'Not set during signup. Enter your phone number.'}
+                          </p>
                         </div>
 
                         {/* Currency */}
