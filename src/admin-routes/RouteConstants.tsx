@@ -41,9 +41,12 @@ import { LiveMonitorPage } from '../pages/admin/operations/LiveMonitorPage';
 export const ADMIN_BASE_PATH = '/admin';
 export const AUTH_BASE_PATH = '/auth';
 
+// Points at the actual mounted routes in AdminApp.tsx (path="login"/"signup"
+// nested under /admin/*), not AUTH_BASE_PATH — that prefix is only reachable
+// as a redirect alias inside AdminApp, never as a top-level route.
 export const AUTH_PATHS = {
-  login: `${AUTH_BASE_PATH}/login`,
-  signup: `${AUTH_BASE_PATH}/signup`,
+  login: `${ADMIN_BASE_PATH}/login`,
+  signup: `${ADMIN_BASE_PATH}/signup`,
 } as const;
 
 export const ADMIN_PATHS = {

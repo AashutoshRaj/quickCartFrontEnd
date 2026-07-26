@@ -33,7 +33,8 @@ export function ProductImportCenter() {
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { mutate: importProducts, isPending: isUploading } = useImportProducts();
+  const { mutate: importProducts, isPending: isUploading, isError, error } = useImportProducts();
+  const uploadErrorMessage = (error as any)?.response?.data?.message || (error as any)?.message;
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -118,6 +119,16 @@ export function ProductImportCenter() {
           Download Template
         </button>
       </div>
+
+      {isError && (
+        <div className="mb-4 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-red-800">Import failed</p>
+            <p className="text-sm text-red-700 mt-0.5">{uploadErrorMessage}</p>
+          </div>
+        </div>
+      )}
 
       {!importResult ? (
         <div

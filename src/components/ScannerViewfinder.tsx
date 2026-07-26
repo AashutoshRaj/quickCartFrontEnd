@@ -34,7 +34,7 @@ export const ScannerViewfinder: React.FC<ScannerViewfinderProps> = ({
   onToggleTorch,
 }): React.ReactElement => {
   return (
-    <div className="flex flex-col items-center gap-5">
+    <div className="flex flex-col items-center gap-5 w-full">
       {/* Frame */}
       <div className="relative w-full max-w-sm aspect-square rounded-3xl overflow-hidden bg-[#0b1220] border border-white/10 shadow-2xl">
         <div id="scanner-container" className="w-full h-full" />

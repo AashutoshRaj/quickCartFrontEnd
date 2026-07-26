@@ -50,7 +50,11 @@ const ScanStore: React.FC = (): React.ReactElement => {
     stopScanner,
     restartScanner,
   } = useBarcodeScanner(
-    (storeId: string) => {
+    (scannedText: string) => {
+      // QR codes encode a deep link (https://quickcart.app/store/<storeId>)
+      // rather than the raw storeId, so extract the id before using it.
+      const match = scannedText.match(/\/store\/([^/?#]+)/);
+      const storeId = match ? match[1] : scannedText;
       setScannedStoreId(storeId);
       toast.success('Store found!');
     }
@@ -415,7 +419,7 @@ const ScanStore: React.FC = (): React.ReactElement => {
                       <img
                         src={store.logo}
                         alt={store.name || store.storeName}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     </div>

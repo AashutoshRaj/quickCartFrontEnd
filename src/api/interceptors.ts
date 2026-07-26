@@ -22,7 +22,11 @@ export const setupInterceptors = (): void => {
    */
   apiClient.interceptors.request.use(
     (config: AxiosRequestConfig): AxiosRequestConfig => {
-      const token = localStorage.getItem('token');
+      // This client is shared by the customer app ('token') and the admin
+      // dashboard's product/import hooks (admin login uses a separate key,
+      // 'quickcart_admin_token') - prefer the admin token when present since
+      // it's the more specific/authoritative session on admin-only routes.
+      const token = localStorage.getItem('quickcart_admin_token') || localStorage.getItem('token');
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }

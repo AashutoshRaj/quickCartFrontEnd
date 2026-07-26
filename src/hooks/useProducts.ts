@@ -33,7 +33,11 @@ interface ImportResult {
 const API_BASE = '/api/v1';
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+  // Admin login stores its token under a separate key from the customer app
+  const token =
+    localStorage.getItem('quickcart_admin_token') ||
+    localStorage.getItem('token') ||
+    localStorage.getItem('authToken');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
