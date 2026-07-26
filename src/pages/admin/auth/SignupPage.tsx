@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff, Lock, Mail, Phone, Store, User } from 'lucide-react';
+import { toast } from 'sonner';
 import { AuthShell } from './AuthShell';
 import { ADMIN_PATHS } from '../../../admin-routes/RouteConstants';
 import { useAuth } from '../../../admin-auth/AuthContext';
@@ -27,7 +28,13 @@ export function SignupPage() {
         phone: String(formData.get('phone') || '') || undefined,
       });
 
-      navigate(ADMIN_PATHS.dashboard, { replace: true });
+      // Show success toast
+      toast.success('Account created successfully!');
+
+      // Redirect to login page
+      setTimeout(() => {
+        navigate('/admin/login', { replace: true });
+      }, 1500);
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const validationMsgs = err.response.data.errors.map((e: any) => e.message).join(', ');

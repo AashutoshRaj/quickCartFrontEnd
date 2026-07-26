@@ -397,6 +397,8 @@ export interface BarcodeScannerHookResult {
   isInitialized: boolean;
   isScanning: boolean;
   error: string | null;
+  torchOn: boolean;
+  toggleTorch: () => Promise<void>;
   initializeScanner: () => Promise<void>;
   stopScanner: () => Promise<void>;
   restartScanner: () => Promise<void>;

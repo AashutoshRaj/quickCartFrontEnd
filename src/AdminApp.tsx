@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import ProtectedRoute from './components/ProtectedRoute.tsx';
+import { PrivateRoute } from './admin-routes/PrivateRoute';
 import { AuthProvider } from './admin-auth/AuthContext';
 
 // Admin Layout & Auth
@@ -63,14 +63,9 @@ const AdminApp = (): ReactElement => {
         <Route path="auth/signup" element={<Navigate to="/admin/signup" replace />} />
 
         {/* Admin Dashboard Routes - Protected */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="dashboard" element={<DashboardPage />} />
+        <Route element={<PrivateRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="dashboard" element={<DashboardPage />} />
 
           {/* Inventory */}
           <Route path="inventory/products" element={<ProductsPage />} />
@@ -119,6 +114,7 @@ const AdminApp = (): ReactElement => {
           {/* Operations */}
           <Route path="exit-gate" element={<ExitGatePage />} />
           <Route path="live-monitor" element={<LiveMonitorPage />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

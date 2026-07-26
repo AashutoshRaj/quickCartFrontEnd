@@ -6,16 +6,17 @@ import {
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 import { useInvalidateStoreProfile } from '../../../hooks/useStoreProfile';
+import { getStoreProfile, updateStoreProfile, regenerateStoreQRCode } from '../../../api/storeApi';
 
 const sections = [
   { id: 'store', label: 'Store Profile', icon: Store },
-  // { id: 'payment', label: 'Payment Methods', icon: CreditCard },
-  // { id: 'tax', label: 'Tax Configuration', icon: ChevronRight },
-  // { id: 'hours', label: 'Business Hours', icon: Clock },
-  // { id: 'integrations', label: 'Integrations', icon: Plug },
-  // { id: 'security', label: 'Security', icon: Shield },
-  // { id: 'api', label: 'API Keys', icon: Key },
-  // { id: 'backup', label: 'Backup & Restore', icon: Database },
+  { id: 'payment', label: 'Payment Methods', icon: CreditCard },
+  { id: 'tax', label: 'Tax Configuration', icon: ChevronRight },
+  { id: 'hours', label: 'Business Hours', icon: Clock },
+  { id: 'integrations', label: 'Integrations', icon: Plug },
+  { id: 'security', label: 'Security', icon: Shield },
+  { id: 'api', label: 'API Keys', icon: Key },
+  { id: 'backup', label: 'Backup & Restore', icon: Database },
 ];
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -67,50 +68,25 @@ const defaultStoreProfile: StoreProfile = {
 
 // API Calls
 const fetchStoreProfile = async (): Promise<StoreProfile> => {
-  const res = await fetch('/api/v1/stores/profile');
-  if (res.status === 404) {
-    console.warn('Store profile not found (404), using defaults');
+  try {
+    const result = await getStoreProfile();
+    const store = result.store || defaultStoreProfile;
+    console.log('Fetched store profile:', store);
+    return store as StoreProfile;
+  } catch (error: any) {
+    console.error('Failed to fetch store profile:', error.message);
     return { ...defaultStoreProfile };
   }
-  if (!res.ok) {
-    console.error('Failed to fetch store profile:', res.status);
-    throw new Error('Failed to fetch store profile');
-  }
-
-  const data = await res.json();
-  console.log('Raw API response:', data);
-
-  // Extract store from response
-  const store = data.data?.store || data.store || data;
-  console.log('Extracted store data:', store);
-
-  return store as StoreProfile;
 };
 
-const saveStoreProfile = async (profile: Partial<StoreProfile>): Promise<StoreProfile> => {
-  const res = await fetch('/api/v1/stores/profile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(profile),
-  });
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to save store profile');
-  }
-  const data = await res.json();
-  return data.data?.store || data;
+const saveStoreProfileAPI = async (profile: Partial<StoreProfile>): Promise<StoreProfile> => {
+  const result = await updateStoreProfile(profile);
+  return result.store as StoreProfile;
 };
 
-const generateStoreQRCode = async (): Promise<StoreProfile> => {
-  const res = await fetch('/api/v1/stores/profile/generate-qr', {
-    method: 'POST',
-  });
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to generate QR code');
-  }
-  const data = await res.json();
-  return data.data?.store || data;
+const generateStoreQRCodeAPI = async (): Promise<StoreProfile> => {
+  const result = await regenerateStoreQRCode();
+  return result.store as StoreProfile;
 };
 
 export function SettingsPage() {
@@ -120,6 +96,7 @@ export function SettingsPage() {
   const queryClient = useQueryClient();
   const invalidateStoreProfile = useInvalidateStoreProfile();
 
+console.log('SettingsPage rendered, active section:', active);
   // Fetch store profile - always enabled to ensure data is available
   const { data: storeProfile, isLoading: storeLoading, error: storeError } = useQuery({
     queryKey: ['storeProfile'],
@@ -162,7 +139,7 @@ export function SettingsPage() {
 
   // Save mutation
   const saveMutation = useMutation({
-    mutationFn: saveStoreProfile,
+    mutationFn: saveStoreProfileAPI,
     onSuccess: (data) => {
       queryClient.setQueryData(['storeProfile'], data);
       setFormData(data);
@@ -179,7 +156,7 @@ export function SettingsPage() {
 
   // Generate QR mutation
   const qrMutation = useMutation({
-    mutationFn: generateStoreQRCode,
+    mutationFn: generateStoreQRCodeAPI,
     onSuccess: (data) => {
       queryClient.setQueryData(['storeProfile'], data);
       setFormData(data);
@@ -393,14 +370,6 @@ export function SettingsPage() {
                     <p className="text-gray-600">Loading store profile...</p>
                   </div>
                 </div>
-              ) : storeError ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-800">Error loading store profile</p>
-                    <p className="text-xs text-red-700 mt-1">{storeError instanceof Error ? storeError.message : 'Failed to load store profile'}</p>
-                  </div>
-                </div>
               ) : (
                 <>
                   {/* Unsaved Changes Warning */}
@@ -425,19 +394,19 @@ export function SettingsPage() {
                     <div className="space-y-4">
                       <h4 className="text-sm font-medium text-gray-700">Basic Details</h4>
                       <div className="grid grid-cols-2 gap-4">
-                        {/* Store Name - Read Only */}
+                        {/* Store Name */}
                         <div>
                           <label className="block text-xs text-gray-600 mb-2" style={{ fontWeight: 500 }}>
                             Store Name <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="text"
+                            name="name"
                             value={formData.name}
-                            disabled
+                            onChange={handleInputChange}
                             placeholder="e.g., John's Retail Store"
-                            className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                            className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
                           />
-                          <p className="text-xs text-gray-400 mt-1.5">Set during account creation. Contact support to change.</p>
                         </div>
 
                         {/* Email - Read Only */}
@@ -447,6 +416,7 @@ export function SettingsPage() {
                           </label>
                           <input
                             type="email"
+                            name="email"
                             value={formData.email || ''}
                             disabled
                             placeholder="your@email.com"
@@ -455,7 +425,7 @@ export function SettingsPage() {
                           <p className="text-xs text-gray-400 mt-1.5">Set during account creation. Contact support to change.</p>
                         </div>
 
-                        {/* Phone Number - Editable if empty, Read Only if filled */}
+                        {/* Phone Number */}
                         <div>
                           <label className="block text-xs text-gray-600 mb-2" style={{ fontWeight: 500 }}>
                             Phone Number <span className="text-red-500">*</span>
@@ -464,20 +434,10 @@ export function SettingsPage() {
                             type="tel"
                             name="phoneNumber"
                             value={formData.phoneNumber}
-                            onChange={formData.phoneNumber ? undefined : handleInputChange}
-                            disabled={!!formData.phoneNumber}
+                            onChange={handleInputChange}
                             placeholder="e.g., +1 (555) 123-4567"
-                            className={`w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition ${
-                              formData.phoneNumber
-                                ? 'bg-gray-50 text-gray-600 cursor-not-allowed'
-                                : 'focus:border-green-400 focus:ring-1 focus:ring-green-200'
-                            }`}
+                            className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
                           />
-                          <p className="text-xs text-gray-400 mt-1.5">
-                            {formData.phoneNumber
-                              ? 'Set during account creation. Contact support to change.'
-                              : 'Not set during signup. Enter your phone number.'}
-                          </p>
                         </div>
 
                         {/* Currency */}

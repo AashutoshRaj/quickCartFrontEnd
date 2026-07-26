@@ -54,7 +54,9 @@ export const useProducts = (
       if (category) params.set('category', category);
       if (status) params.set('status', status);
 
-      const response = await fetch(`${API_BASE}/products?${params}`);
+      const response = await fetch(`${API_BASE}/products?${params}`, {
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) throw new Error('Failed to fetch products');
       return response.json() as Promise<ProductListResponse>;
     },

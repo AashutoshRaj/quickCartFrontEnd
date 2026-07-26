@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../../admin-auth/AuthContext';
+import { useAuth } from '../admin-auth/AuthContext';
 import { AUTH_PATHS } from './RouteConstants';
 
 export function PrivateRoute() {

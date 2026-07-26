@@ -44,16 +44,6 @@ export const setupInterceptors = (): void => {
 
       if (response) {
         /**
-         * Handle 401 Unauthorized
-         * Clear credentials and redirect to login
-         */
-        if (response.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
-        }
-
-        /**
          * Centralized error message handling
          */
         const message = (response.data as Record<string, unknown>)?.message || 'Something went wrong';

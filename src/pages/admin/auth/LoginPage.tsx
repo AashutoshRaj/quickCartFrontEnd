@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { toast } from 'sonner';
 import { AuthShell } from './AuthShell';
 import { ADMIN_PATHS } from '../../../admin-routes/RouteConstants';
 import { useAuth } from '../../../admin-auth/AuthContext';
@@ -20,13 +21,28 @@ export function LoginPage() {
 
     const formData = new FormData(event.currentTarget);
     try {
-      await login({
+      const result = await login({
         email: String(formData.get('email') || ''),
         password: String(formData.get('password') || ''),
       });
 
-      const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
-      navigate(from || ADMIN_PATHS.dashboard, { replace: true });
+      // Show success toast
+      toast.success('Login successful!');
+
+      // Log token to console for verification
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        console.log('✓ Token stored in localStorage:', {
+          key: 'auth_token',
+          token: token.substring(0, 20) + '...',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('/admin/dashboard', { replace: true });
+      }, 1000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {

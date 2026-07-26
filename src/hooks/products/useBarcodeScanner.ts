@@ -52,6 +52,7 @@ export const useBarcodeScanner = (
   const [isInitialized, setIsInitialized] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [torchOn, setTorchOn] = useState(false);
   const scannerRef = useRef<string | null>(null);
   const qrcodeRef = useRef<Html5Qrcode | null>(null);
 
@@ -136,6 +137,22 @@ export const useBarcodeScanner = (
   }, [onScanSuccess, onScanError]);
 
   /**
+   * Toggle device torch/flashlight if supported
+   */
+  const toggleTorch = useCallback(async (): Promise<void> => {
+    if (!qrcodeRef.current) return;
+    try {
+      const nextState = !torchOn;
+      await qrcodeRef.current.applyVideoConstraints({
+        advanced: [{ torch: nextState } as MediaTrackConstraintSet],
+      });
+      setTorchOn(nextState);
+    } catch (err) {
+      console.debug('Torch not supported:', err);
+    }
+  }, [torchOn]);
+
+  /**
    * Stop scanner and cleanup resources
    */
   const stopScanner = useCallback(async (): Promise<void> => {
@@ -157,10 +174,10 @@ export const useBarcodeScanner = (
         qrcodeRef.current = null;
         setIsScanning(false);
         setIsInitialized(false);
+        setTorchOn(false);
         scannerRef.current = null;
       } catch (err) {
-        console.error('Error stopping scanner:', err);
-        // Force cleanup even if stop fails
+        console.debug('Error stopping scanner (ignored during cleanup):', err);
         qrcodeRef.current = null;
       }
     }
@@ -189,15 +206,18 @@ export const useBarcodeScanner = (
   useEffect(() => {
     return () => {
       if (qrcodeRef.current) {
-        qrcodeRef.current
-          .stop()
-          .then(() => qrcodeRef.current?.clear())
-          .catch((err) => {
-            // Ignore "not running" errors
-            if (!(err as Error).message?.includes('not running')) {
-              console.error('Cleanup error:', err);
-            }
-          });
+        try {
+          qrcodeRef.current
+            .stop()
+            .then(() => qrcodeRef.current?.clear())
+            .catch((err) => {
+              console.debug('Cleanup error (ignored):', err);
+            });
+        } catch (err) {
+          // Html5Qrcode.stop() can throw synchronously when scanner
+          // isn't in a running/paused state (e.g. double-cleanup races)
+          console.debug('Cleanup error (ignored, sync):', err);
+        }
       }
     };
   }, []);
@@ -206,6 +226,8 @@ export const useBarcodeScanner = (
     isInitialized,
     isScanning,
     error,
+    torchOn,
+    toggleTorch,
     initializeScanner,
     stopScanner,
     restartScanner,

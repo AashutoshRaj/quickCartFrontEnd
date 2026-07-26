@@ -1,38 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getStoreProfile, StoreData } from '../api/storeApi';
 
-interface StoreProfile {
-  _id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  postalCode?: string;
-  description?: string;
-  currency: string;
-  timezone: string;
-  logo?: string | null;
-  qrCode?: string | null;
-  qrGeneratedAt?: string;
-  businessHours?: Array<{
-    day: string;
-    open: boolean;
-    from: string;
-    to: string;
-  }>;
-  status?: 'active' | 'inactive' | 'closed';
-}
+type StoreProfile = StoreData;
 
 const fetchStoreProfile = async (): Promise<StoreProfile> => {
-  const res = await fetch('/api/v1/stores/profile');
-  if (res.status === 404) {
-    throw new Error('No store profile found');
-  }
-  if (!res.ok) throw new Error('Failed to fetch store profile');
-  const data = await res.json();
-  return data.data?.store || data;
+  const result = await getStoreProfile();
+  return result.store;
 };
 
 export function useStoreProfile() {
