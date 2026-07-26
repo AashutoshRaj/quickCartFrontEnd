@@ -1,11 +1,21 @@
-import React, { useEffect, useRef } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import QRCode from 'qrcode';
 import { PATHS } from '../app/paths';
 import cartService from '../api/services/cartService.ts';
 import apiClient from '../api/axios.ts';
+
+interface OrderDetails {
+  _id?: string;
+  storeName: string;
+  total: number;
+  totalAmount?: number;
+  createdAt: string;
+  paidAt?: string;
+  completedAt?: string;
+}
 
 /**
  * Payment Success Page Component
@@ -20,6 +30,8 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
   const sessionId = searchParams.get('session_id');
   const queryClient = useQueryClient();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [isLoadingOrder, setIsLoadingOrder] = useState(true);
 
   useEffect(() => {
     const handlePaymentSuccess = async (): Promise<void> => {
@@ -37,6 +49,17 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
       } catch (error) {
         console.error('Error handling payment success:', error);
       }
+
+      // Fetch the real order (store name, total, timestamps) for this session
+      if (sessionId) {
+        try {
+          const response = await apiClient.get(`/checkout/order/${sessionId}`);
+          setOrder(response.data.data);
+        } catch (error) {
+          console.error('Error fetching order details:', error);
+        }
+      }
+      setIsLoadingOrder(false);
     };
 
     handlePaymentSuccess();
@@ -67,14 +90,18 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
     }
   };
 
-  const transactionId = `#QC-${sessionId?.slice(0, 6).toUpperCase() || 'UNKNOWN'}`;
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const transactionId = `#QC-${(order?._id || sessionId || 'UNKNOWN').slice(-6).toUpperCase()}`;
+  const orderTimestamp = order?.paidAt || order?.completedAt || order?.createdAt;
+  const formattedDate = orderTimestamp
+    ? new Date(orderTimestamp).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '—';
+  const paidTotal = order?.totalAmount ?? order?.total;
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
@@ -96,25 +123,36 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
 
           {/* Transaction Details */}
           <div className="bg-gray-50 rounded-2xl p-5 mb-6 space-y-4">
-            <div className="flex justify-between items-start text-sm">
-              <span className="text-gray-600 font-medium">Store Name</span>
-              <span className="text-gray-900 font-semibold">FreshMart Downtown</span>
-            </div>
-            <div className="border-t border-gray-200" />
-            <div className="flex justify-between items-start text-sm">
-              <span className="text-gray-600 font-medium">Total Paid</span>
-              <span className="text-green-600 font-bold text-lg">$42.85</span>
-            </div>
-            <div className="border-t border-gray-200" />
-            <div className="flex justify-between items-start text-sm">
-              <span className="text-gray-600 font-medium">Transaction ID</span>
-              <span className="text-gray-900 font-semibold">{transactionId}</span>
-            </div>
-            <div className="border-t border-gray-200" />
-            <div className="flex justify-between items-start text-sm">
-              <span className="text-gray-600 font-medium">Date & Time</span>
-              <span className="text-gray-900 font-semibold text-right text-xs">{currentDate}</span>
-            </div>
+            {isLoadingOrder ? (
+              <div className="flex items-center justify-center gap-2 py-4 text-sm text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading order details…
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-start text-sm">
+                  <span className="text-gray-600 font-medium">Store Name</span>
+                  <span className="text-gray-900 font-semibold">{order?.storeName || '—'}</span>
+                </div>
+                <div className="border-t border-gray-200" />
+                <div className="flex justify-between items-start text-sm">
+                  <span className="text-gray-600 font-medium">Total Paid</span>
+                  <span className="text-green-600 font-bold text-lg">
+                    {paidTotal != null ? `$${paidTotal.toFixed(2)}` : '—'}
+                  </span>
+                </div>
+                <div className="border-t border-gray-200" />
+                <div className="flex justify-between items-start text-sm">
+                  <span className="text-gray-600 font-medium">Transaction ID</span>
+                  <span className="text-gray-900 font-semibold">{transactionId}</span>
+                </div>
+                <div className="border-t border-gray-200" />
+                <div className="flex justify-between items-start text-sm">
+                  <span className="text-gray-600 font-medium">Date & Time</span>
+                  <span className="text-gray-900 font-semibold text-right text-xs">{formattedDate}</span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* QR Code Section */}

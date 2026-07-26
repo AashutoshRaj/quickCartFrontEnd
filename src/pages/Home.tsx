@@ -57,6 +57,8 @@ const Home: React.FC = (): React.ReactElement => {
   const [showProductIdInput, setShowProductIdInput] = useState(false);
   const [productId, setProductId] = useState('');
   const { user } = useSelector((state: RootState) => state.auth);
+console.log('userinfoooo', user);
+
   const { activeStore } = useSelector((state: RootState) => state.store);
   console.log('activeStore', activeStore);
 
@@ -149,7 +151,7 @@ const Home: React.FC = (): React.ReactElement => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mt-6"
+            className="mt-6 hidden"
           >
             <div className="grid grid-cols-2 gap-3">
               {/* Scan Product QR Button */}
