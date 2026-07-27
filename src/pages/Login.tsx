@@ -102,6 +102,7 @@ const Login: React.FC = (): React.ReactElement => {
       }
 
       if ((response as OTPVerifyResponse).success || (response as OTPVerifyResponse).status === 'success') {
+        localStorage.setItem('quickcart_onboarded', 'true');
         toast.success('Login successful 🎉');
         navigate(PATHS.HOME);
       }
@@ -119,6 +120,7 @@ const Login: React.FC = (): React.ReactElement => {
       });
 
       if ((response as RegistrationResponse).success || (response as RegistrationResponse).status === 'success') {
+        localStorage.setItem('quickcart_onboarded', 'true');
         toast.success('Login successful 🎉');
         navigate('/');
       }

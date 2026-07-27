@@ -40,9 +40,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }): React.Reac
    * Redirect to login if not authenticated
    */
   if (!isAuthenticated) {
+    const hasOnboarded = localStorage.getItem('quickcart_onboarded') === 'true';
     return (
       <Navigate
-        to={PATHS.LOGIN}
+        to={hasOnboarded ? PATHS.LOGIN : PATHS.ONBOARDING}
         state={{ from: location }}
         replace
       />

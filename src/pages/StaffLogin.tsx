@@ -38,6 +38,7 @@ const StaffLogin: React.FC = (): React.ReactElement => {
     try {
       const response = await staffLogin(data.identifier.trim(), data.password);
       dispatch(setStaffAuth({ staffUser: response.data, staffToken: response.token }));
+      localStorage.setItem('quickcart_onboarded', 'true');
       toast.success('Login successful 🎉');
       navigate(PATHS.STAFF_HOME);
     } catch (error) {
