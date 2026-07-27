@@ -18,9 +18,9 @@ const StaffProfile: React.FC = (): React.ReactElement => {
   const { staffUser } = useSelector((state: RootState) => state.staffAuth);
 
   const handleLogout = (): void => {
+    navigate(PATHS.LOGIN, { replace: true });
     dispatch(staffLogout());
     toast.success('Logged out');
-    navigate(PATHS.STAFF_LOGIN);
   };
 
   if (!staffUser) return <></>;

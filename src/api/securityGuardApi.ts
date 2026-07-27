@@ -59,12 +59,12 @@ export interface CreateSecurityGuardPayload {
 }
 
 export interface SecurityGuardListFilters {
-  search?: string;
-  shift?: string;
-  status?: string;
-  sort?: 'newest' | 'mostActive' | 'employeeId';
-  page?: number;
-  limit?: number;
+  search?: string | undefined;
+  shift?: string | undefined;
+  status?: string | undefined;
+  sort?: 'newest' | 'mostActive' | 'employeeId' | undefined;
+  page?: number | undefined;
+  limit?: number | undefined;
 }
 
 /**

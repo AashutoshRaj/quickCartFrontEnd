@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 interface StoreQRCodeProps {
   storeId: string;
   storeName: string;
-  qrCodeDataURL?: string;
+  qrCodeDataURL?: string | undefined;
   onRegenerate?: () => Promise<void>;
 }
 

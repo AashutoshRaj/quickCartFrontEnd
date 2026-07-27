@@ -9,6 +9,7 @@ import type {
   GetOrdersResponse,
   GetOrderByIdResponse,
   OrdersListResult,
+  OrderDetails,
 } from '../../types/index';
 
 /**
@@ -41,7 +42,7 @@ const ordersService = {
    * @example
    * const order = await ordersService.getOrderById('order_123');
    */
-  getOrderById: async (orderId: string): Promise<unknown> => {
+  getOrderById: async (orderId: string): Promise<OrderDetails> => {
     const response = await apiClient.get<GetOrderByIdResponse>(`/orders/${orderId}`);
     return response.data.data;
   },

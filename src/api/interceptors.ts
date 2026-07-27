@@ -3,7 +3,7 @@
  * Sets up request and response interceptors for axios client
  */
 
-import type { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import type { InternalAxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import apiClient from './axios.ts';
 
 /**
@@ -21,7 +21,7 @@ export const setupInterceptors = (): void => {
    * Adds authorization token to request headers
    */
   apiClient.interceptors.request.use(
-    (config: AxiosRequestConfig): AxiosRequestConfig => {
+    (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
       // This client is shared by the customer app ('token') and the admin
       // dashboard's product/import hooks (admin login uses a separate key,
       // 'quickcart_admin_token') - prefer the admin token when present since

@@ -45,8 +45,8 @@ const cartService = {
    */
   addToCart: async (params: {
     productId: string;
-    quantity?: number;
-    storeId?: string;
+    quantity?: number | undefined;
+    storeId?: string | undefined;
   }): Promise<AddToCartResponse> => {
     const response = await apiClient.post<AddToCartResponse>('/cart/add', {
       productId: params.productId,

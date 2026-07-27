@@ -50,8 +50,8 @@ export function ProductImportCenter() {
     setIsDragging(false);
 
     const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      const file = files[0];
+    const file = files[0];
+    if (file) {
       const ext = file.name.split('.').pop()?.toLowerCase();
       const supportedFormats = ['csv', 'xlsx', 'xls'];
 
@@ -65,9 +65,9 @@ export function ProductImportCenter() {
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setSelectedFile(files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
       setImportResult(null);
     }
   };

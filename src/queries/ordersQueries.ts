@@ -10,7 +10,7 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import ordersService from '../api/services/ordersService.ts';
-import type { GetOrdersParams, OrdersListResult } from '../types/index';
+import type { GetOrdersParams, OrdersListResult, OrderDetails } from '../types/index';
 
 /**
  * Hook to fetch all orders for the authenticated user
@@ -64,7 +64,7 @@ export const useOrders = (
  */
 export const useOrderDetails = (
   orderId: string
-): UseQueryResult<unknown, Error> => {
+): UseQueryResult<OrderDetails, Error> => {
   return useQuery({
     queryKey: ['order', orderId],
     queryFn: () => ordersService.getOrderById(orderId),

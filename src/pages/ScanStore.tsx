@@ -54,7 +54,7 @@ const ScanStore: React.FC = (): React.ReactElement => {
       // QR codes encode a deep link (https://quickcart.app/store/<storeId>)
       // rather than the raw storeId, so extract the id before using it.
       const match = scannedText.match(/\/store\/([^/?#]+)/);
-      const storeId = match ? match[1] : scannedText;
+      const storeId = match?.[1] ?? scannedText;
       setScannedStoreId(storeId);
       toast.success('Store found!');
     }

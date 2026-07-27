@@ -72,7 +72,8 @@ const Onboarding: React.FC = (): React.ReactElement => {
         </Link>
 
         <Link
-          to={PATHS.STAFF_LOGIN}
+          to={PATHS.LOGIN}
+          state={{ authMode: 'staff' }}
           className="w-full bg-white border border-outline/10 flex items-center justify-center gap-3 py-4 rounded-2xl shadow-sm hover:bg-background transition-all text-on-surface font-poppins font-semibold text-base group"
         >
           <ShieldCheck size={18} className="text-primary" />

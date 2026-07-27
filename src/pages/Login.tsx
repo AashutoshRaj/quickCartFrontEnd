@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch, type FieldValues } from 'react-hook-form';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Eye, EyeOff, Loader2, ScanFace, ShoppingBag } from 'lucide-react';
 import { PATHS } from '../app/paths';
@@ -79,7 +79,9 @@ const FieldShell: React.FC<{
 );
 
 const Login: React.FC = (): React.ReactElement => {
-  const [authMode, setAuthMode] = useState<'phone' | 'staff'>('phone');
+  const location = useLocation();
+  const initialAuthMode = (location.state as { authMode?: 'phone' | 'staff' } | null)?.authMode ?? 'phone';
+  const [authMode, setAuthMode] = useState<'phone' | 'staff'>(initialAuthMode);
   const [authStep, setAuthStep] = useState<'phone' | 'otp' | 'name'>('phone');
   const [registrationToken, setRegistrationToken] = useState<string>('');
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -385,7 +387,7 @@ const Login: React.FC = (): React.ReactElement => {
                   authMode === 'phone' ? 'text-surface' : 'text-text-secondary'
                 }`}
               >
-                Phone
+                I'm a Shopper
               </button>
               <button
                 type="button"
@@ -398,7 +400,7 @@ const Login: React.FC = (): React.ReactElement => {
                   authMode === 'staff' ? 'text-surface' : 'text-text-secondary'
                 }`}
               >
-                Staff
+                I'm Staff
               </button>
             </div>
           </motion.div>

@@ -253,7 +253,7 @@ export function StoreProfilePage(): React.ReactElement {
               <StoreQRCode
                 storeId={store._id}
                 storeName={store.name}
-                qrCodeDataURL={store.qrCode}
+                qrCodeDataURL={store.qrCode ?? undefined}
                 onRegenerate={handleRegenerate}
               />
             </div>

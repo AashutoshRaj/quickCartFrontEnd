@@ -37,10 +37,10 @@ export interface CreateEmployeePayload {
 }
 
 export interface EmployeeListFilters {
-  search?: string;
-  role?: string;
-  status?: string;
-  sort?: 'newest' | 'employeeId' | 'name';
+  search?: string | undefined;
+  role?: string | undefined;
+  status?: string | undefined;
+  sort?: 'newest' | 'employeeId' | 'name' | undefined;
 }
 
 /**

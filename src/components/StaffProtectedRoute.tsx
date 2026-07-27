@@ -26,7 +26,7 @@ const StaffProtectedRoute: React.FC<StaffProtectedRouteProps> = ({
   if (!isStaffAuthenticated) {
     return (
       <Navigate
-        to={PATHS.STAFF_LOGIN}
+        to={PATHS.LOGIN}
         state={{ from: location }}
         replace
       />
@@ -34,7 +34,7 @@ const StaffProtectedRoute: React.FC<StaffProtectedRouteProps> = ({
   }
 
   if (staffUser && !allowedActorTypes.includes(staffUser.actorType)) {
-    return <Navigate to={PATHS.STAFF_LOGIN} replace />;
+    return <Navigate to={PATHS.LOGIN} replace />;
   }
 
   return <>{children}</>;

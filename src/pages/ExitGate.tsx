@@ -51,8 +51,8 @@ const ExitGate: React.FC = (): React.ReactElement => {
       (decodedText: string) => {
         handleQRScan(decodedText, scanner);
       },
-      (error: Error) => {
-        console.warn('QR scan error:', error);
+      (errorMessage: string) => {
+        console.warn('QR scan error:', errorMessage);
       }
     );
 

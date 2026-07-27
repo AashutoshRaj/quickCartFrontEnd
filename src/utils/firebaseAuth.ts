@@ -11,7 +11,18 @@ import type {
   UserCredential,
   User
 } from 'firebase/auth';
-import type { FirebaseAuthError, AuthStateCallback, UnsubscribeFunction } from '../types/index';
+import type { FirebaseAuthError, AuthStateCallback, UnsubscribeFunction, AuthInstance } from '../types/index';
+
+/**
+ * Get the initialized Firebase Auth instance, throwing a clear error if
+ * Firebase failed to initialize (see config/firebase.ts)
+ */
+const requireAuth = (): AuthInstance => {
+  if (!auth) {
+    throw new Error('Firebase Auth is not initialized. Check your Firebase configuration.');
+  }
+  return auth;
+};
 
 /**
  * Initialize reCAPTCHA verifier
@@ -111,7 +122,7 @@ export const sendOTPToPhone = async (
      * Send OTP using Firebase
      */
     const confirmationResult = await signInWithPhoneNumber(
-      auth,
+      requireAuth(),
       phoneNumber,
       recaptchaVerifier
     );
@@ -175,12 +186,12 @@ export const verifyOTPCode = async (
 export const getCurrentUser = async (): Promise<User | null> => {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(
-      auth,
+      requireAuth(),
       (user: User | null) => {
         unsubscribe();
         resolve(user);
       },
-      (error: FirebaseError) => {
+      (error: Error) => {
         unsubscribe();
         reject(error);
       }

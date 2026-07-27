@@ -46,7 +46,7 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
   const navigate = useNavigate();
   const [copiedId, setCopiedId] = useState<boolean>(false);
 
-  const { data: order, isLoading, isError, error } = useOrderDetails(orderId);
+  const { data: order, isLoading, isError, error } = useOrderDetails(orderId || '');
   const downloadInvoice = useDownloadInvoice();
 
   const handleCopyOrderId = (e: React.MouseEvent<HTMLButtonElement>): void => {
@@ -117,7 +117,9 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
               Failed to Load Order
             </p>
             <p className="text-secondary font-inter text-xs">
-              {error?.response?.data?.message || 'Something went wrong'}
+              {(error as { response?: { data?: { message?: string } } } | null)?.response?.data?.message
+                || error?.message
+                || 'Something went wrong'}
             </p>
           </div>
         </main>
@@ -153,7 +155,7 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
   const statusKey = (order.status?.toLowerCase() || 'pending') as keyof typeof STATUS_COLORS;
   const statusColor = STATUS_COLORS[statusKey] || STATUS_COLORS.pending;
 
-  const orderDate = new Date(order.createdAt || new Date());
+  const orderDate = new Date((order.createdAt as string | number | undefined) || Date.now());
   const dateStr = orderDate.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',

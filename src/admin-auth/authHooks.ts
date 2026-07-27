@@ -22,8 +22,8 @@ export interface SignupPayload {
   name: string;
   email: string;
   storeName: string;
-  password?: string;
-  phone?: string;
+  password?: string | undefined;
+  phone?: string | undefined;
 }
 
 export interface LoginPayload {

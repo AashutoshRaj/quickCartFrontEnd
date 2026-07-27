@@ -36,7 +36,6 @@ const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess.tsx'))
 const PaymentCancel = lazy(() => import('./pages/PaymentCancel.tsx'))
 const ExitGate = lazy(() => import('./pages/ExitGate.tsx'))
 const QRTest = lazy(() => import('./pages/QRTest.tsx'))
-const StaffLogin = lazy(() => import('./pages/StaffLogin.tsx'))
 const StaffHome = lazy(() => import('./pages/StaffHome.tsx'))
 const StaffScanner = lazy(() => import('./pages/StaffScanner.tsx'))
 const StaffVerifyResult = lazy(() => import('./pages/StaffVerifyResult.tsx'))
@@ -83,7 +82,6 @@ function AppContent(): ReactElement {
     PATHS.HISTORY,
     PATHS.PROFILE,
     PATHS.LOGIN,
-    PATHS.STAFF_LOGIN,
     PATHS.STAFF_HOME,
     PATHS.STAFF_SCAN,
     PATHS.STAFF_PROFILE,
@@ -154,7 +152,6 @@ function AppContent(): ReactElement {
                 <Route path={PATHS.EXIT_GATE} element={<ExitGate />} />
                 <Route path={PATHS.ONBOARDING} element={<Onboarding />} />
                 <Route path={PATHS.LOGIN} element={<Login />} />
-                <Route path={PATHS.STAFF_LOGIN} element={<StaffLogin />} />
                 <Route path={PATHS.STAFF_HOME} element={<StaffProtectedRoute><StaffHome /></StaffProtectedRoute>} />
                 <Route path={PATHS.STAFF_SCAN} element={<StaffProtectedRoute><StaffScanner /></StaffProtectedRoute>} />
                 <Route path={PATHS.STAFF_VERIFY} element={<StaffProtectedRoute><StaffVerifyResult /></StaffProtectedRoute>} />

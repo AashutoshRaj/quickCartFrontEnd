@@ -41,7 +41,7 @@ export const useAddToCart = (): UseMutationResult<
   return useMutation({
     mutationFn: ({ productId, quantity = 1, storeId }: AddToCartParams) =>
       cartService.addToCart({ productId, quantity, storeId }),
-    onSuccess: (data: AddToCartResponse & Record<string, unknown>) => {
+    onSuccess: (data: AddToCartResponse) => {
       /**
        * Invalidate cart query to trigger refetch
        */
@@ -50,7 +50,7 @@ export const useAddToCart = (): UseMutationResult<
       /**
        * Update cache with new cart data if available
        */
-      const cart = (data as Record<string, unknown>)?.data?.cart;
+      const cart = (data.data as Record<string, unknown> | undefined)?.cart;
       if (cart) {
         queryClient.setQueryData(['cart'], { data: { cart } });
       }

@@ -7,6 +7,17 @@ import { RecaptchaVerifier, auth } from '../config/firebase.ts';
 import type { RecaptchaVerifier as FirebaseRecaptchaVerifier } from 'firebase/auth';
 
 /**
+ * Get the initialized Firebase Auth instance, throwing a clear error if
+ * Firebase failed to initialize (see config/firebase.ts)
+ */
+const requireAuth = () => {
+  if (!auth) {
+    throw new Error('Firebase Auth is not initialized. Check your Firebase configuration.');
+  }
+  return auth;
+};
+
+/**
  * Module-level reCAPTCHA verifier instance
  * @internal
  */
@@ -47,7 +58,7 @@ export const initRecaptchaWidget = (containerId: string): FirebaseRecaptchaVerif
     /**
      * Initialize reCAPTCHA with invisible rendering
      */
-    recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+    recaptchaVerifier = new RecaptchaVerifier(requireAuth(), containerId, {
       size: 'invisible',
       // Badge position: 'bottomright', 'bottomleft', 'inline'
       badge: 'bottomright',

@@ -10,7 +10,6 @@ export const PATHS = {
   ONBOARDING: '/onboarding',
 
   // Staff App Routes
-  STAFF_LOGIN: '/staff-login',
   STAFF_HOME: '/staff-home',
   STAFF_SCAN: '/staff-scan',
   STAFF_VERIFY: '/staff-verify/:sessionId',

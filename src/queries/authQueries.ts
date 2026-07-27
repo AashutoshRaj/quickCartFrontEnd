@@ -101,11 +101,11 @@ export const useVerifyOTP = (): UseMutationResult<
   return useMutation({
     mutationFn: ({ phoneNumber, otp }: { phoneNumber: string; otp: string }) =>
       authService.verifyOTP({ phoneNumber, otp }),
-    onSuccess: (data: VerifyOTPResponse & Record<string, unknown>) => {
-      if ((data.status === 'success' || (data as Record<string, unknown>).success) && (data as Record<string, unknown>).token) {
+    onSuccess: (data: VerifyOTPResponse) => {
+      if ((data.status === 'success' || data.success) && data.token) {
         dispatch(setAuth({
-          user: (data as Record<string, unknown>).user || (data as Record<string, unknown>).data?.user,
-          token: (data as Record<string, unknown>).token as string,
+          user: data.user || data.data?.user,
+          token: data.token as string,
         }));
       }
     },
@@ -138,7 +138,7 @@ export const useVerifyOTP = (): UseMutationResult<
  * });
  */
 export const useCompleteRegistration = (): UseMutationResult<
-  CompleteRegistrationResponse & Record<string, unknown>,
+  CompleteRegistrationResponse,
   Error,
   { name: string; registrationToken: string }
 > => {
@@ -153,10 +153,11 @@ export const useCompleteRegistration = (): UseMutationResult<
       registrationToken: string;
     }) =>
       authService.completeRegistration({ name, registrationToken }),
-    onSuccess: (data: CompleteRegistrationResponse & Record<string, unknown>) => {
+    onSuccess: (data: CompleteRegistrationResponse) => {
+      const nestedData = data.data as Record<string, unknown> | undefined;
       if ((data.status === 'success' || data.success) && data.token) {
         dispatch(setAuth({
-          user: data.user || data.data?.user,
+          user: data.user || nestedData?.user,
           token: data.token as string,
         }));
       }

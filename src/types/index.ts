@@ -149,7 +149,9 @@ export interface VerifyOTPResponse {
   data?: {
     registrationToken?: string;
     token?: string;
+    user?: unknown;
   };
+  [key: string]: unknown;
 }
 
 export interface CompleteRegistrationRequest {
@@ -160,6 +162,7 @@ export interface CompleteRegistrationRequest {
 export interface CompleteRegistrationResponse {
   status: string;
   data?: unknown;
+  [key: string]: unknown;
 }
 
 /**
@@ -341,18 +344,18 @@ export interface AuthStateType {
 
 export interface ActiveStore {
   storeId: string;
-  name?: string;
-  storeName?: string;
-  logo?: string;
-  currency?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  timezone?: string;
-  phone?: string;
-  phoneNumber?: string;
-  status?: string;
+  name?: string | undefined;
+  storeName?: string | undefined;
+  logo?: string | undefined;
+  currency?: string | undefined;
+  address?: string | undefined;
+  city?: string | undefined;
+  state?: string | undefined;
+  country?: string | undefined;
+  timezone?: string | undefined;
+  phone?: string | undefined;
+  phoneNumber?: string | undefined;
+  status?: string | undefined;
 }
 
 export interface StoreStateType {
@@ -404,18 +407,18 @@ export interface SetAuthPayload {
 
 export interface SetActiveStorePayload {
   storeId: string;
-  name?: string;
-  storeName?: string;
-  logo?: string;
-  currency?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  timezone?: string;
-  phone?: string;
-  phoneNumber?: string;
-  status?: string;
+  name?: string | undefined;
+  storeName?: string | undefined;
+  logo?: string | undefined;
+  currency?: string | undefined;
+  address?: string | undefined;
+  city?: string | undefined;
+  state?: string | undefined;
+  country?: string | undefined;
+  timezone?: string | undefined;
+  phone?: string | undefined;
+  phoneNumber?: string | undefined;
+  status?: string | undefined;
 }
 
 /**
@@ -566,6 +569,7 @@ export interface ScannerOverlayProps {
  */
 export interface OrderDetailsParams {
   orderId: string;
+  [key: string]: string | undefined;
 }
 
 export interface PaymentSuccessParams {

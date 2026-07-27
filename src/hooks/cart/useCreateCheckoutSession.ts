@@ -44,9 +44,10 @@ export const useCreateCheckoutSession = (): UseMutationResult<
 > => {
   return useMutation({
     mutationFn: () => cartService.createCheckoutSession(),
-    onSuccess: async (data: CheckoutSessionResponse & Record<string, unknown>) => {
-      const sessionId = (data as Record<string, unknown>)?.data?.checkoutSessionId as string;
-      const url = (data as Record<string, unknown>)?.data?.url as string;
+    onSuccess: async (data: CheckoutSessionResponse) => {
+      const responseData = data.data as Record<string, unknown> | undefined;
+      const sessionId = responseData?.checkoutSessionId as string | undefined;
+      const url = responseData?.url as string | undefined;
 
       /**
        * If session ID provided, redirect to Stripe checkout
@@ -60,8 +61,14 @@ export const useCreateCheckoutSession = (): UseMutationResult<
 
           /**
            * Redirect to Stripe checkout
+           * `redirectToCheckout` was removed from @stripe/stripe-js's typings
+           * (legacy Checkout flow) but the runtime method still exists for
+           * accounts using it; cast narrowly rather than dropping the call.
            */
-          const { error } = await stripe.redirectToCheckout({ sessionId });
+          const legacyStripe = stripe as Stripe & {
+            redirectToCheckout: (options: { sessionId: string }) => Promise<{ error?: Error }>;
+          };
+          const { error } = await legacyStripe.redirectToCheckout({ sessionId });
           if (error) {
             throw error;
           }
