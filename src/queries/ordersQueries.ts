@@ -10,7 +10,7 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query';
 import ordersService from '../api/services/ordersService.ts';
-import type { GetOrdersParams } from '../types/index';
+import type { GetOrdersParams, OrdersListResult } from '../types/index';
 
 /**
  * Hook to fetch all orders for the authenticated user
@@ -20,7 +20,7 @@ import type { GetOrdersParams } from '../types/index';
  * @param {number} [params.limit] - Items per page
  * @param {string} [params.status] - Filter by order status
  * @returns {UseQueryResult} Query result with orders data
- * @returns {Array | undefined} data - Array of order objects
+ * @returns {OrdersListResult | undefined} data - Orders for the page plus total page count
  * @returns {boolean} isLoading - Loading state
  * @returns {boolean} isError - Error state
  * @returns {Error | null} error - Error object if query fails
@@ -35,7 +35,7 @@ import type { GetOrdersParams } from '../types/index';
  */
 export const useOrders = (
   params: GetOrdersParams = {}
-): UseQueryResult<Array<unknown>, Error> => {
+): UseQueryResult<OrdersListResult, Error> => {
   return useQuery({
     queryKey: ['orders', params],
     queryFn: () => ordersService.getOrders(params),

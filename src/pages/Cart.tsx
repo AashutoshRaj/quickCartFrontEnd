@@ -1,16 +1,20 @@
 import React from 'react';
-import { ChevronLeft, Trash2, Plus, Minus, CreditCard } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ChevronLeft, Trash2, Plus, Minus, CreditCard, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { CartItem as CartItemType } from '../types/index';
 import BottomNav from '../components/BottomNav.tsx';
+import { PATHS } from '../app/paths';
 import { useCart } from '../hooks/cart/useCart.ts';
 import { useIncreaseQuantity } from '../hooks/cart/useIncreaseQuantity.ts';
 import { useDecreaseQuantity } from '../hooks/cart/useDecreaseQuantity.ts';
 import { useRemoveCartItem } from '../hooks/cart/useRemoveCartItem.ts';
 import { useClearCart } from '../hooks/cart/useClearCart.ts';
 import { useCreateCheckoutSession } from '../hooks/cart/useCreateCheckoutSession.ts';
+
+const SOFT_SHADOW = 'shadow-[0_2px_8px_rgba(15,23,42,0.04),0_12px_30px_rgba(15,23,42,0.08)]';
+const SOFT_SHADOW_HOVER = 'hover:shadow-[0_4px_12px_rgba(15,23,42,0.06),0_16px_40px_rgba(15,23,42,0.10)]';
 
 interface CartItemProps {
   item: CartItemType & {
@@ -54,7 +58,7 @@ const Cart: React.FC = (): React.ReactElement => {
   const clearCart = useClearCart();
   const createCheckoutSession = useCreateCheckoutSession();
 
-  const cart = (data as CartData)?.data?.cart;
+  const cart = (data as unknown as CartData)?.data?.cart;
   const items = cart?.items || [];
 
   const handleClearCart = async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
@@ -83,66 +87,124 @@ const Cart: React.FC = (): React.ReactElement => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-52">
-      <header className="p-2 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
-        <button onClick={handleNavigateBack} className="p-2 -ml-2 hover:bg-white rounded-full transition-colors">
-          <ChevronLeft size={24} className="text-on-surface" />
+    <div className="min-h-screen bg-background pb-64">
+      <header className="px-5 py-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-xl z-20 shadow-[0_1px_0_rgba(15,23,42,0.04)]">
+        <button
+          onClick={handleNavigateBack}
+          className={`bg-white p-2.5 rounded-full ${SOFT_SHADOW} ${SOFT_SHADOW_HOVER} transition-shadow duration-200`}
+        >
+          <ChevronLeft size={20} className="text-on-surface" />
         </button>
-        <h1 className="text-on-surface font-poppins font-bold text-xl">My Cart</h1>
-        <button onClick={handleClearCart} className="p-2 hover:bg-white rounded-full transition-colors" disabled={items.length === 0}>
-          <Trash2 size={24} className={`transition-colors ${items.length ? 'text-red-500' : 'text-gray-300'}`} />
+        <h1 className="text-on-surface font-poppins font-bold text-lg">My Cart</h1>
+        <button
+          onClick={handleClearCart}
+          disabled={items.length === 0}
+          className={`bg-white p-2.5 rounded-full ${SOFT_SHADOW} transition-all duration-200 disabled:opacity-40 ${
+            items.length ? SOFT_SHADOW_HOVER : ''
+          }`}
+        >
+          <Trash2 size={18} className={`transition-colors duration-200 ${items.length ? 'text-red-500' : 'text-outline'}`} />
         </button>
       </header>
 
-      <main className="px-6 space-y-4">
-        {isLoading && <p className="text-center text-sm text-secondary py-8">Loading cart...</p>}
-        {isError && <p className="text-center text-sm text-red-500 py-8">Unable to load your cart.</p>}
-        {!isLoading && items.length === 0 && (
-          <div className="rounded-[2rem] border border-dashed border-outline/20 bg-white p-8 text-center text-secondary">
-            Your cart is empty. Scan a product to start shopping.
+      <main className="px-5 pt-5 space-y-4">
+        {isLoading && (
+          <div className="space-y-4">
+            {[1, 2].map((i) => (
+              <div key={i} className={`flex items-center bg-white p-5 rounded-[24px] ${SOFT_SHADOW} animate-pulse`}>
+                <div className="w-20 h-20 bg-background rounded-2xl" />
+                <div className="flex-1 ml-5 space-y-2.5">
+                  <div className="h-3.5 bg-background rounded-full w-2/3" />
+                  <div className="h-3 bg-background rounded-full w-1/3" />
+                  <div className="h-4 bg-background rounded-full w-1/4" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
-        {items.map((item) => (
-          <CartItem
-            key={item.productId}
-            item={item}
-            onIncrease={() => increaseQuantity.mutate(item.productId)}
-            onDecrease={() => decreaseQuantity.mutate(item.productId)}
-            onRemove={() => removeItem.mutate(item.productId)}
-          />
-        ))}
 
-        <div className="mt-12 bg-white p-8 rounded-[2rem] shadow-sm border border-outline/5">
-          <h3 className="text-on-surface font-poppins font-bold text-lg mb-6">Order Summary</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-secondary font-inter">Subtotal</span>
-              <span className="text-on-surface font-inter font-semibold">₹{Number(cart?.subtotal || 0).toFixed(2)}</span>
+        {isError && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className={`bg-white rounded-[24px] p-8 text-center ${SOFT_SHADOW}`}
+          >
+            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="text-red-500" size={26} />
             </div>
-            <div className="flex justify-between">
-              <span className="text-secondary font-inter">Tax (5%)</span>
-              <span className="text-on-surface font-inter font-semibold">₹{Number(cart?.tax || 0).toFixed(2)}</span>
+            <p className="text-on-surface font-poppins font-bold text-sm mb-1">Unable to Load Cart</p>
+            <p className="text-secondary font-inter text-xs">Please check your connection and try again.</p>
+          </motion.div>
+        )}
+
+        {!isLoading && !isError && items.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className={`bg-white rounded-[24px] p-12 text-center ${SOFT_SHADOW}`}
+          >
+            <div className="w-16 h-16 bg-primary/10 rounded-[20px] flex items-center justify-center mx-auto mb-5">
+              <ShoppingBag className="text-primary" size={30} />
             </div>
-            <div className="flex justify-between mt-6 pt-6 border-t border-outline/10">
-              <span className="text-on-surface font-poppins font-bold text-xl">Total</span>
-              <span className="text-primary font-poppins font-bold text-xl">₹{Number(cart?.grandTotal || 0).toFixed(2)}</span>
+            <p className="text-on-surface font-poppins font-bold text-lg mb-1.5">Your Cart is Empty</p>
+            <p className="text-secondary font-inter text-sm mb-6">Scan a product to start shopping.</p>
+            <button
+              onClick={() => navigate(PATHS.HOME)}
+              className="px-6 py-3 bg-gradient-to-br from-primary to-[#FF9F1C] text-white rounded-[16px] font-inter font-semibold text-sm shadow-[0_8px_20px_rgba(255,184,0,0.3)] hover:shadow-[0_10px_24px_rgba(255,184,0,0.4)] active:scale-95 transition-all duration-200"
+            >
+              Start Shopping
+            </button>
+          </motion.div>
+        )}
+
+        <AnimatePresence initial={false}>
+          {items.map((item) => (
+            <CartItem
+              key={item.productId}
+              item={item}
+              onIncrease={() => increaseQuantity.mutate(item.productId)}
+              onDecrease={() => decreaseQuantity.mutate(item.productId)}
+              onRemove={() => removeItem.mutate(item.productId)}
+            />
+          ))}
+        </AnimatePresence>
+
+        {items.length > 0 && (
+          <div className={`mt-8 bg-white p-6 rounded-[24px] ${SOFT_SHADOW}`}>
+            <h3 className="text-on-surface font-poppins font-bold text-base mb-5">Order Summary</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-secondary font-inter text-sm">Subtotal</span>
+                <span className="text-on-surface font-inter font-semibold text-sm">₹{Number(cart?.subtotal || 0).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-secondary font-inter text-sm">Tax (5%)</span>
+                <span className="text-on-surface font-inter font-semibold text-sm">₹{Number(cart?.tax || 0).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between mt-5 pt-5 border-t border-outline/10">
+                <span className="text-on-surface font-poppins font-bold text-lg">Total</span>
+                <span className="text-primary font-poppins font-bold text-lg">₹{Number(cart?.grandTotal || 0).toFixed(2)}</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
 
-      <div className="fixed bottom-[76px] left-1/2 w-full max-w-md -translate-x-1/2 p-4 bg-white/80 backdrop-blur-xl border-t border-outline/5 z-30">
-        <div className="max-w-md mx-auto">
-          <button
-            className="w-full bg-primary flex items-center justify-center gap-3 py-4 rounded-2xl shadow-xl hover:bg-primary/90 transition-all text-white font-poppins font-bold text-base disabled:opacity-70"
+      {items.length > 0 && (
+        <div className="fixed bottom-[112px] left-1/2 w-full max-w-md -translate-x-1/2 px-5 z-30">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            className={`w-full bg-gradient-to-br from-primary to-[#FF9F1C] flex items-center justify-center gap-3 py-4 rounded-[20px] shadow-[0_10px_28px_rgba(255,184,0,0.4)] hover:shadow-[0_14px_34px_rgba(255,184,0,0.5)] transition-all duration-200 text-white font-poppins font-bold text-base disabled:opacity-60 disabled:shadow-none`}
             disabled={items.length === 0 || createCheckoutSession.isPending}
             onClick={handleCheckout}
           >
             <CreditCard size={22} />
             {createCheckoutSession.isPending ? 'Starting Checkout...' : 'Checkout Now'}
-          </button>
+          </motion.button>
         </div>
-      </div>
+      )}
       <BottomNav />
     </div>
   );
@@ -174,34 +236,36 @@ const CartItem: React.FC<CartItemProps> = ({ item, onIncrease, onDecrease, onRem
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex items-center bg-white p-5 rounded-[2rem] shadow-sm border border-outline/5 group"
+      initial={{ opacity: 0, y: 12, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className={`flex items-center bg-white p-5 rounded-[24px] ${SOFT_SHADOW} ${SOFT_SHADOW_HOVER} transition-shadow duration-200 group`}
     >
-      <div className="w-20 h-20 bg-background rounded-2xl flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+      <div className="w-20 h-20 bg-background rounded-[18px] flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
         {item.productImage ? (
           <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
         ) : (
           <div className="w-10 h-10 bg-primary/10 rounded-full" />
         )}
       </div>
-      <div className="flex-1 ml-5">
-        <h4 className="text-on-surface font-poppins font-semibold text-base">{item.productName}</h4>
+      <div className="flex-1 ml-5 min-w-0">
+        <h4 className="text-on-surface font-poppins font-semibold text-sm truncate">{item.productName}</h4>
         <p className="text-secondary font-inter text-xs mt-1">Qty {item.quantity}</p>
         <p className="text-primary font-poppins font-bold mt-2 text-lg">₹{Number(item.price || 0).toFixed(2)}</p>
         <p className="text-secondary font-inter text-xs mt-1">Subtotal ₹{Number(item.subtotal || 0).toFixed(2)}</p>
       </div>
-      <div className="flex flex-col items-end gap-3">
-        <button onClick={handleRemove} className="p-2 hover:bg-red-50 rounded-xl transition-colors">
+      <div className="flex flex-col items-end gap-3 flex-shrink-0">
+        <button onClick={handleRemove} className="p-2 hover:bg-red-50 rounded-xl transition-colors duration-200">
           <Trash2 size={16} className="text-red-500" />
         </button>
-        <div className="flex items-center bg-background rounded-2xl p-1 shadow-inner">
-          <button onClick={handleDecrease} className="p-2 hover:bg-white rounded-xl transition-colors shadow-sm">
-            <Minus size={16} className="text-primary" />
+        <div className="flex items-center bg-background rounded-2xl p-1">
+          <button onClick={handleDecrease} className={`p-2 bg-white rounded-xl ${SOFT_SHADOW} hover:scale-105 active:scale-95 transition-transform duration-150`}>
+            <Minus size={14} className="text-primary" />
           </button>
-          <span className="mx-4 font-poppins font-bold text-on-surface">{item.quantity}</span>
-          <button onClick={handleIncrease} className="p-2 hover:bg-white rounded-xl transition-colors shadow-sm">
-            <Plus size={16} className="text-primary" />
+          <span className="mx-3.5 font-poppins font-bold text-on-surface text-sm w-4 text-center">{item.quantity}</span>
+          <button onClick={handleIncrease} className={`p-2 bg-white rounded-xl ${SOFT_SHADOW} hover:scale-105 active:scale-95 transition-transform duration-150`}>
+            <Plus size={14} className="text-primary" />
           </button>
         </div>
       </div>

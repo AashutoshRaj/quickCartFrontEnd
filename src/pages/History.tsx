@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   Search,
   ChevronRight,
+  ChevronLeft,
   ShoppingBag,
   Download,
   Eye,
@@ -11,6 +12,9 @@ import {
   Calendar,
   Clock,
   X,
+  SlidersHorizontal,
+  Check,
+  AlertTriangle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { CartItem, Order } from '../types/index';
@@ -40,17 +44,15 @@ interface DateFilters {
   [key: string]: DateFilter;
 }
 
-interface OrdersResponse {
-  orders: Order[];
-  totalPages: number;
-}
-
 interface OrderCardProps {
   order: Order;
   index: number;
   onDownload: () => void;
   onViewDetails: () => void;
 }
+
+const SOFT_SHADOW = 'shadow-[0_2px_8px_rgba(15,23,42,0.04),0_12px_30px_rgba(15,23,42,0.08)]';
+const SOFT_SHADOW_HOVER = 'hover:shadow-[0_4px_12px_rgba(15,23,42,0.06),0_16px_40px_rgba(15,23,42,0.10)]';
 
 const STATUS_COLORS: StatusColors = {
   completed: { bg: 'bg-green-100', text: 'text-green-700' },
@@ -87,6 +89,8 @@ const History: React.FC = (): React.ReactElement => {
   });
   console.log('historylist', data);
 
+  const totalPages = data?.totalPages ?? 1;
+
   const filteredOrders = useMemo((): Order[] => {
     if (!data?.orders) return [];
 
@@ -107,7 +111,7 @@ const History: React.FC = (): React.ReactElement => {
     // Date filter
     if (selectedFilter !== 'all') {
       const filterConfig = DATE_FILTERS[selectedFilter];
-      if (filterConfig.days) {
+      if (filterConfig?.days) {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - filterConfig.days);
 
@@ -156,102 +160,106 @@ const History: React.FC = (): React.ReactElement => {
     if (direction === 'prev') {
       setPage(Math.max(1, page - 1));
     } else {
-      setPage(Math.min(data?.totalPages || 1, page + 1));
+      setPage(Math.min(totalPages, page + 1));
     }
   };
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
-      <header className="sticky top-0 bg-background/80 backdrop-blur-md z-20 border-b border-outline/10">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
+      <header className="sticky top-0 bg-background/80 backdrop-blur-xl z-20 shadow-[0_1px_0_rgba(15,23,42,0.04)]">
+        <div className="px-5 pt-5 pb-1">
+          <div className="flex items-center justify-between mb-5">
             <button
               onClick={handleNavigateBack}
-              className="p-2 -ml-2 hover:bg-white rounded-full transition-colors"
+              className={`bg-white p-2.5 rounded-full ${SOFT_SHADOW} ${SOFT_SHADOW_HOVER} transition-shadow duration-200`}
             >
-              <ArrowLeft size={24} className="text-on-surface" />
+              <ArrowLeft size={20} className="text-on-surface" />
             </button>
-            <h1 className="text-on-surface font-poppins font-bold text-xl">Order History</h1>
+            <h1 className="text-on-surface font-poppins font-bold text-lg">Order History</h1>
             <div className="w-10" />
           </div>
-          <p className="text-secondary font-inter text-sm">Review your past shopping sessions</p>
+          <p className="text-secondary font-inter text-sm mb-5">Review your past shopping sessions</p>
         </div>
 
         {/* Search & Filter */}
-        <div className="px-6 pb-4 space-y-3">
-          <div className="flex gap-2">
+        <div className="px-5 pb-5 space-y-3 relative">
+          <div className="flex gap-2.5">
             <div className="flex-1 relative">
               <Search
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-outline"
               />
               <input
                 type="text"
                 placeholder="Search by store or order ID"
                 value={searchQuery}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-white border border-outline/20 rounded-xl font-inter text-sm focus:outline-none focus:border-primary/50"
+                className={`w-full pl-11 pr-9 py-3.5 bg-white rounded-[18px] ${SOFT_SHADOW} border-none font-inter text-sm placeholder:text-outline/70 focus:outline-none focus:ring-4 focus:ring-primary/15 transition-all duration-200`}
               />
               {searchQuery && (
                 <button
                   onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 hover:bg-background rounded-full transition-colors duration-200"
                 >
-                  <X size={16} className="text-secondary" />
+                  <X size={15} className="text-secondary" />
                 </button>
               )}
             </div>
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.94 }}
               onClick={handleFilterClick}
-              className={`px-4 py-2.5 rounded-xl font-inter font-semibold text-sm transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-3.5 rounded-[18px] font-inter font-semibold text-sm transition-all duration-200 ${
                 selectedFilter !== 'all'
-                  ? 'bg-primary text-white'
-                  : 'bg-white border border-outline/20 text-on-surface'
+                  ? `bg-gradient-to-br from-primary to-[#FF9F1C] text-white shadow-[0_6px_16px_rgba(255,184,0,0.35)]`
+                  : `bg-white text-on-surface ${SOFT_SHADOW}`
               }`}
             >
-              Filter
+              <SlidersHorizontal size={16} />
             </motion.button>
           </div>
 
           {/* Filter Dropdown */}
-          {showFilter && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="bg-white border border-outline/20 rounded-xl overflow-hidden shadow-lg"
-            >
-              {Object.entries(DATE_FILTERS).map(([key, config]: [string, DateFilter]) => (
-                <button
-                  key={key}
-                  onClick={() => handleFilterSelect(key)}
-                  className={`w-full px-4 py-3 text-left font-inter text-sm transition-colors ${
-                    selectedFilter === key
-                      ? 'bg-primary/10 text-primary font-semibold'
-                      : 'text-on-surface hover:bg-gray-50'
-                  }`}
-                >
-                  {config.label}
-                </button>
-              ))}
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {showFilter && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className={`absolute right-5 top-full mt-1 w-56 bg-white rounded-[20px] overflow-hidden ${SOFT_SHADOW} z-30 p-1.5`}
+              >
+                {Object.entries(DATE_FILTERS).map(([key, config]: [string, DateFilter]) => (
+                  <button
+                    key={key}
+                    onClick={() => handleFilterSelect(key)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-[14px] text-left font-inter text-sm transition-colors duration-150 ${
+                      selectedFilter === key
+                        ? 'bg-primary/10 text-primary font-semibold'
+                        : 'text-on-surface hover:bg-background'
+                    }`}
+                  >
+                    {config.label}
+                    {selectedFilter === key && <Check size={15} />}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
-      <main className="px-6 py-6 space-y-4">
+      <main className="px-5 pt-5 space-y-4">
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i: number) => (
-              <div key={i} className="bg-white p-5 rounded-2xl animate-pulse">
+              <div key={i} className={`bg-white p-5 rounded-[24px] ${SOFT_SHADOW} animate-pulse`}>
                 <div className="flex gap-4">
-                  <div className="w-16 h-16 bg-gray-200 rounded-2xl" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4" />
-                    <div className="h-3 bg-gray-100 rounded w-1/2" />
-                    <div className="h-3 bg-gray-100 rounded w-1/3" />
+                  <div className="w-16 h-16 bg-background rounded-[18px]" />
+                  <div className="flex-1 space-y-2.5 py-1">
+                    <div className="h-3.5 bg-background rounded-full w-3/4" />
+                    <div className="h-3 bg-background rounded-full w-1/2" />
+                    <div className="h-3 bg-background rounded-full w-1/3" />
                   </div>
                 </div>
               </div>
@@ -261,18 +269,23 @@ const History: React.FC = (): React.ReactElement => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center"
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className={`bg-white rounded-[24px] p-8 text-center ${SOFT_SHADOW}`}
           >
-            <ShoppingBag className="text-red-500 mx-auto mb-3" size={32} />
+            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="text-red-500" size={26} />
+            </div>
             <p className="text-on-surface font-poppins font-bold text-sm mb-1">
               Failed to Load Orders
             </p>
-            <p className="text-secondary font-inter text-xs mb-4">
-              {error?.response?.data?.message || 'Something went wrong'}
+            <p className="text-secondary font-inter text-xs mb-5">
+              {(error as { response?: { data?: { message?: string } } } | null)?.response?.data?.message
+                || error?.message
+                || 'Something went wrong'}
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg font-inter font-semibold text-xs hover:bg-red-600 transition-colors"
+              className="px-5 py-2.5 bg-on-surface text-white rounded-[16px] font-inter font-semibold text-xs hover:opacity-90 active:scale-95 transition-all duration-200"
             >
               Try Again
             </button>
@@ -281,12 +294,13 @@ const History: React.FC = (): React.ReactElement => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-12 text-center border border-outline/10"
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className={`bg-white rounded-[24px] p-12 text-center ${SOFT_SHADOW}`}
           >
-            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <ShoppingBag className="text-primary" size={32} />
+            <div className="w-16 h-16 bg-primary/10 rounded-[20px] flex items-center justify-center mx-auto mb-5">
+              <ShoppingBag className="text-primary" size={30} />
             </div>
-            <p className="text-on-surface font-poppins font-bold text-lg mb-1">
+            <p className="text-on-surface font-poppins font-bold text-lg mb-1.5">
               No Order History
             </p>
             <p className="text-secondary font-inter text-sm mb-6">
@@ -294,7 +308,7 @@ const History: React.FC = (): React.ReactElement => {
             </p>
             <button
               onClick={() => navigate(PATHS.HOME)}
-              className="px-6 py-2.5 bg-primary text-white rounded-xl font-inter font-semibold text-sm hover:bg-primary/90 transition-colors"
+              className="px-6 py-3 bg-gradient-to-br from-primary to-[#FF9F1C] text-white rounded-[16px] font-inter font-semibold text-sm shadow-[0_8px_20px_rgba(255,184,0,0.3)] hover:shadow-[0_10px_24px_rgba(255,184,0,0.4)] active:scale-95 transition-all duration-200"
             >
               Continue Shopping
             </button>
@@ -303,6 +317,7 @@ const History: React.FC = (): React.ReactElement => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
             className="space-y-4"
           >
             {filteredOrders.map((order: Order, index: number) => (
@@ -316,24 +331,24 @@ const History: React.FC = (): React.ReactElement => {
             ))}
 
             {/* Pagination */}
-            {data?.totalPages > 1 && (
+            {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-8">
                 <button
                   onClick={() => handlePageChange('prev')}
                   disabled={page === 1}
-                  className="px-4 py-2 rounded-lg border border-outline/20 font-inter text-sm disabled:opacity-50"
+                  className={`p-2.5 rounded-full bg-white ${SOFT_SHADOW} ${SOFT_SHADOW_HOVER} transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none`}
                 >
-                  Previous
+                  <ChevronLeft size={18} className="text-on-surface" />
                 </button>
-                <span className="text-secondary font-inter text-sm px-4">
-                  Page {page} of {data.totalPages}
+                <span className="text-secondary font-inter text-xs font-semibold px-3 py-1.5 bg-white rounded-full">
+                  Page {page} of {totalPages}
                 </span>
                 <button
                   onClick={() => handlePageChange('next')}
-                  disabled={page === data.totalPages}
-                  className="px-4 py-2 rounded-lg border border-outline/20 font-inter text-sm disabled:opacity-50"
+                  disabled={page === totalPages}
+                  className={`p-2.5 rounded-full bg-white ${SOFT_SHADOW} ${SOFT_SHADOW_HOVER} transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none`}
                 >
-                  Next
+                  <ChevronRight size={18} className="text-on-surface" />
                 </button>
               </div>
             )}
@@ -395,33 +410,33 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-2xl shadow-sm border border-outline/10 overflow-hidden hover:shadow-md transition-all"
+      transition={{ duration: 0.3, ease: 'easeOut', delay: Math.min(index * 0.05, 0.3) }}
+      className={`bg-white rounded-[24px] overflow-hidden ${SOFT_SHADOW} ${SOFT_SHADOW_HOVER} transition-shadow duration-200`}
     >
       {/* Collapsed View */}
-      <motion.button
+      <button
         onClick={handleExpandClick}
-        className="w-full text-left p-5 hover:bg-gray-50/50 transition-colors"
+        className="w-full text-left p-5 active:bg-background/60 transition-colors duration-150"
       >
         <div className="flex gap-4">
           {/* Store Icon */}
-          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <ShoppingBag className="text-primary" size={28} />
+          <div className="w-16 h-16 bg-primary/10 rounded-[18px] flex items-center justify-center flex-shrink-0">
+            <ShoppingBag className="text-primary" size={26} />
           </div>
 
           {/* Store Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-start justify-between gap-2 mb-2.5">
               <div>
                 <h4 className="text-on-surface font-poppins font-bold text-sm truncate">
                   {(order as any).storeName || 'Store'}
                 </h4>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1.5">
                   <div className="flex items-center gap-1 text-secondary font-inter text-xs">
                     <Calendar size={12} />
                     {dateStr}
                   </div>
-                  <span className="w-1 h-1 bg-outline/20 rounded-full" />
+                  <span className="w-1 h-1 bg-outline/30 rounded-full" />
                   <div className="flex items-center gap-1 text-secondary font-inter text-xs">
                     <Clock size={12} />
                     {timeStr}
@@ -438,136 +453,138 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
             </div>
 
             {/* Order Summary */}
-            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-outline/10">
+            <div className="flex items-center gap-5 mt-3 pt-3 border-t border-outline/10">
               <div>
-                <p className="text-secondary font-inter text-xs">Total Items</p>
-                <p className="text-on-surface font-poppins font-bold text-sm">{totalItems}</p>
+                <p className="text-secondary font-inter text-[11px]">Total Items</p>
+                <p className="text-on-surface font-poppins font-bold text-sm mt-0.5">{totalItems}</p>
               </div>
               <div>
-                <p className="text-secondary font-inter text-xs">Total Amount</p>
-                <p className="text-primary font-poppins font-bold text-sm">
+                <p className="text-secondary font-inter text-[11px]">Total Amount</p>
+                <p className="text-primary font-poppins font-bold text-sm mt-0.5">
                   ${total.toFixed(2)}
                 </p>
               </div>
-              <div className="ml-auto">
-                <ChevronRight
-                  size={20}
-                  className={`text-secondary transition-transform ${
-                    expanded ? 'rotate-90' : ''
-                  }`}
-                />
-              </div>
+              <motion.div
+                animate={{ rotate: expanded ? 90 : 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="ml-auto w-8 h-8 rounded-full bg-background flex items-center justify-center"
+              >
+                <ChevronRight size={16} className="text-secondary" />
+              </motion.div>
             </div>
           </div>
         </div>
-      </motion.button>
+      </button>
 
       {/* Expanded View */}
-      {expanded && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          className="border-t border-outline/10 bg-gray-50/50"
-        >
-          <div className="p-5 space-y-5">
-            {/* Itemized Receipt */}
-            <div className="space-y-3">
-              <h5 className="text-on-surface font-poppins font-bold text-xs uppercase tracking-widest">
-                Itemized Receipt
-              </h5>
-              <div className="space-y-2">
-                {order.items?.map((item: CartItem, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between text-sm">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-on-surface font-inter font-medium truncate">
-                        {(item as any).name || (item as any).productName}
-                      </p>
-                      <p className="text-secondary font-inter text-xs">
-                        {item.quantity}x @ ${(item.price || (item as any).unitPrice || 0).toFixed(2)}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="bg-background/60"
+          >
+            <div className="p-5 space-y-5">
+              {/* Itemized Receipt */}
+              <div className="space-y-3">
+                <h5 className="text-on-surface font-poppins font-bold text-xs uppercase tracking-widest">
+                  Itemized Receipt
+                </h5>
+                <div className="space-y-2.5">
+                  {order.items?.map((item: CartItem, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between text-sm">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-on-surface font-inter font-medium truncate">
+                          {(item as any).name || (item as any).productName}
+                        </p>
+                        <p className="text-secondary font-inter text-xs">
+                          {item.quantity}x @ ${(item.price || (item as any).unitPrice || 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <p className="text-on-surface font-inter font-semibold text-xs ml-2 flex-shrink-0">
+                        ${((item.price || (item as any).unitPrice || 0) * (item.quantity || 1)).toFixed(2)}
                       </p>
                     </div>
-                    <p className="text-on-surface font-inter font-semibold text-xs ml-2 flex-shrink-0">
-                      ${((item.price || (item as any).unitPrice || 0) * (item.quantity || 1)).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Order Details */}
-            <div className="space-y-2 pt-3 border-t border-outline/10">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-secondary font-inter">Subtotal</span>
-                <span className="text-on-surface font-inter font-medium">
-                  ${subtotal.toFixed(2)}
-                </span>
-              </div>
-              {tax > 0 && (
+              {/* Order Details */}
+              <div className="space-y-2 pt-3 border-t border-outline/10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-secondary font-inter">Tax</span>
+                  <span className="text-secondary font-inter">Subtotal</span>
                   <span className="text-on-surface font-inter font-medium">
-                    ${tax.toFixed(2)}
+                    ${subtotal.toFixed(2)}
                   </span>
                 </div>
+                {tax > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-secondary font-inter">Tax</span>
+                    <span className="text-on-surface font-inter font-medium">
+                      ${tax.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {discount > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-secondary font-inter">Discount</span>
+                    <span className="text-green-600 font-inter font-medium">
+                      -${discount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-sm pt-2 border-t border-outline/10 font-poppins font-bold">
+                  <span className="text-on-surface">Grand Total</span>
+                  <span className="text-primary">${total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Store Details */}
+              {(order as any).storeAddress && (
+                <div className={`flex gap-2.5 p-3.5 bg-white rounded-[16px] ${SOFT_SHADOW}`}>
+                  <MapPin size={16} className="text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-secondary font-inter text-xs mb-1">Store Address</p>
+                    <p className="text-on-surface font-inter text-xs">{(order as any).storeAddress}</p>
+                  </div>
+                </div>
               )}
-              {discount > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-secondary font-inter">Discount</span>
-                  <span className="text-green-600 font-inter font-medium">
-                    -${discount.toFixed(2)}
+
+              {/* Order ID */}
+              <div className={`bg-white rounded-[16px] p-3.5 ${SOFT_SHADOW}`}>
+                <p className="text-secondary font-inter text-xs mb-1">Order ID</p>
+                <p className="text-on-surface font-poppins font-bold text-sm">
+                  #{order._id || (order as any).id}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2.5 pt-3 border-t border-outline/10">
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={handleDownloadClick}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white rounded-[16px] ${SOFT_SHADOW} ${SOFT_SHADOW_HOVER} transition-all duration-200`}
+                >
+                  <Download size={16} className="text-primary" />
+                  <span className="font-inter font-semibold text-sm text-primary">
+                    Download PDF
                   </span>
-                </div>
-              )}
-              <div className="flex items-center justify-between text-sm pt-2 border-t border-outline/10 font-poppins font-bold">
-                <span className="text-on-surface">Grand Total</span>
-                <span className="text-primary">${total.toFixed(2)}</span>
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={handleViewDetailsClick}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-primary to-[#FF9F1C] text-white rounded-[16px] shadow-[0_6px_16px_rgba(255,184,0,0.3)] hover:shadow-[0_8px_20px_rgba(255,184,0,0.4)] transition-all duration-200"
+                >
+                  <Eye size={16} />
+                  <span className="font-inter font-semibold text-sm">View Details</span>
+                </motion.button>
               </div>
             </div>
-
-            {/* Store Details */}
-            {(order as any).storeAddress && (
-              <div className="flex gap-2 p-3 bg-white rounded-lg border border-outline/10">
-                <MapPin size={16} className="text-secondary flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-secondary font-inter text-xs mb-1">Store Address</p>
-                  <p className="text-on-surface font-inter text-xs">{(order as any).storeAddress}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Order ID */}
-            <div className="bg-white rounded-lg p-3 border border-outline/10">
-              <p className="text-secondary font-inter text-xs mb-1">Order ID</p>
-              <p className="text-on-surface font-poppins font-bold text-sm">
-                #{order._id || (order as any).id}
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2 pt-3 border-t border-outline/10">
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleDownloadClick}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-outline/20 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Download size={16} className="text-primary" />
-                <span className="font-inter font-semibold text-sm text-primary">
-                  Download PDF
-                </span>
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleViewDetailsClick}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                <Eye size={16} />
-                <span className="font-inter font-semibold text-sm">View Details</span>
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

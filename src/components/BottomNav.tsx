@@ -5,10 +5,20 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { History, House, QrCode, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '../hooks/cart/useCart.ts';
 import { PATHS } from '../app/paths';
 import type { NavItem, BottomNavItemProps } from '../types/index';
+
+interface CartData {
+  data?: {
+    cart?: {
+      items?: Array<{ quantity?: number }>;
+      totalItems?: number;
+    };
+  };
+}
 
 /**
  * Navigation items configuration
@@ -45,19 +55,16 @@ export default function BottomNav(): React.ReactElement {
   /**
    * Calculate total cart item quantity
    */
-  const cart = (data as Record<string, unknown>)?.data?.cart as Record<string, unknown> | undefined;
+  const cart = (data as unknown as CartData)?.data?.cart;
   const cartCount = Array.isArray(cart?.items)
-    ? (cart.items as Array<Record<string, unknown>>).reduce(
-        (sum, item) => sum + Number(item?.quantity || 0),
-        0
-      )
+    ? cart.items.reduce((sum, item) => sum + Number(item?.quantity || 0), 0)
     : Number(cart?.totalItems || 0);
 
   console.log('cartvalue', cartCount);
 
   return (
-    <nav className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 bg-white/90 backdrop-blur-xl border-t border-outline/10 px-4 py-3 z-30 shadow-[0_-10px_30px_rgba(15,23,42,0.06)]">
-      <div className="flex items-center justify-between gap-2">
+    <nav className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 px-4 pb-4 z-30">
+      <div className="relative flex items-center justify-between bg-white rounded-full px-2 shadow-[0_2px_8px_rgba(15,23,42,0.06),0_16px_36px_rgba(15,23,42,0.14)]">
         {navItems.map((item) => (
           <BottomNavItem
             key={item.to}
@@ -74,18 +81,15 @@ export default function BottomNav(): React.ReactElement {
 /**
  * BottomNavItem Component
  *
- * Individual navigation item with icon, label, and optional badge.
+ * Individual navigation item with icon and optional badge.
+ * Active item pops above the bar as a floating circular bubble
+ * that slides smoothly between positions.
  *
  * @param {BottomNavItemProps} props - Component props
  * @param {NavItem} props.item - Navigation item configuration
  * @param {boolean} props.active - Whether item is currently active
  * @param {number} props.cartCount - Item count to display in badge (0 = hidden)
  * @returns {React.ReactElement} Styled navigation link
- *
- * @remarks
- * - Featured items (scan) have special styling
- * - Badge shows for cart with quantity > 0
- * - Active state changes text color and icon style
  */
 function BottomNavItem({
   item,
@@ -93,58 +97,38 @@ function BottomNavItem({
   cartCount = 0,
 }: BottomNavItemProps): React.ReactElement {
   const Icon = item.icon;
-
-  /**
-   * Base styling for all nav items
-   */
-  const baseClass =
-    'flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 font-inter transition-all';
-
-  /**
-   * State-dependent styling
-   */
-  const stateClass = active
-    ? 'text-primary'
-    : 'text-secondary hover:text-on-surface';
-
-  /**
-   * Icon styling with special handling for featured items
-   */
-  const iconClass = item.featured
-    ? `flex h-11 w-11 items-center justify-center rounded-2xl shadow-sm transition-all ${
-        active
-          ? 'bg-primary text-white shadow-primary/20'
-          : 'bg-primary/10 text-primary'
-      }`
-    : 'flex h-7 w-7 items-center justify-center';
+  const showBadge = item.to === PATHS.CART && cartCount > 0;
 
   return (
     <Link
       to={item.to}
-      className={`${baseClass} ${stateClass}`}
+      className="relative flex flex-1 h-16 items-center justify-center"
       aria-current={active ? 'page' : undefined}
+      aria-label={item.label}
     >
-      <span className="relative">
-        <span className={iconClass}>
-          <Icon
-            size={item.featured ? 22 : 21}
-            strokeWidth={active ? 2.5 : 2}
-          />
+      {active ? (
+        <motion.span
+          layoutId="bottom-nav-bubble"
+          transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+          className="absolute -top-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-[0_10px_24px_rgba(255,184,0,0.45)]"
+        >
+          <Icon size={22} strokeWidth={2.3} className="text-white" />
+          {showBadge && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-on-surface px-1 py-0.5 text-[10px] font-bold text-white text-center leading-none ring-2 ring-white">
+              {cartCount}
+            </span>
+          )}
+        </motion.span>
+      ) : (
+        <span className="relative flex items-center justify-center text-secondary/60">
+          <Icon size={21} strokeWidth={1.8} />
+          {showBadge && (
+            <span className="absolute -top-1.5 -right-2 min-w-[16px] rounded-full bg-primary px-1 py-0.5 text-[9px] font-bold text-white text-center leading-none">
+              {cartCount}
+            </span>
+          )}
         </span>
-        {/* Cart badge */}
-        {item.to === PATHS.CART && cartCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white text-center">
-            {cartCount}
-          </span>
-        )}
-      </span>
-      <span
-        className={`truncate text-[10px] font-semibold leading-none ${
-          active ? 'opacity-100' : 'opacity-60'
-        }`}
-      >
-        {item.label}
-      </span>
+      )}
     </Link>
   );
 }

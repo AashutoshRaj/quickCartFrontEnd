@@ -8,6 +8,7 @@ import type {
   GetOrdersParams,
   GetOrdersResponse,
   GetOrderByIdResponse,
+  OrdersListResult,
 } from '../../types/index';
 
 /**
@@ -21,14 +22,14 @@ const ordersService = {
    * @param {number} [params.page] - Page number for pagination
    * @param {number} [params.limit] - Items per page
    * @param {string} [params.status] - Filter by order status
-   * @returns {Promise<Array>} Array of order objects
+   * @returns {Promise<OrdersListResult>} Orders for the page plus total page count
    *
    * @example
    * const orders = await ordersService.getOrders({ page: 1, limit: 10 });
    */
-  getOrders: async (params: GetOrdersParams = {}): Promise<Array<unknown>> => {
+  getOrders: async (params: GetOrdersParams = {}): Promise<OrdersListResult> => {
     const response = await apiClient.get<GetOrdersResponse>('/orders', { params });
-    return response.data.data;
+    return response.data.data ?? { orders: [], totalPages: 1 };
   },
 
   /**

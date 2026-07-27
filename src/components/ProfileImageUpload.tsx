@@ -4,9 +4,11 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Camera, Trash2, Loader } from 'lucide-react';
+import { Camera, Loader, User } from 'lucide-react';
 import { uploadProfileImage, deleteProfileImage } from '../api/userApi.ts';
 import type { ProfileImageUploadProps } from '../types/index';
+
+const SOFT_SHADOW = 'shadow-[0_2px_8px_rgba(15,23,42,0.04),0_12px_30px_rgba(15,23,42,0.08)]';
 
 /**
  * ProfileImageUpload Component
@@ -77,10 +79,8 @@ export default function ProfileImageUpload({
       formData.append('profileImage', file);
 
       const response = await uploadProfileImage(formData);
-      onImageChange?.(
-        (response as Record<string, unknown>)?.data?.data?.user
-          ?.profileImage as unknown
-      );
+      const user = response.data?.user ?? response.data?.data?.user;
+      onImageChange?.(user?.profileImage);
     } catch (err) {
       console.error('Error uploading image:', err);
       setError('Failed to upload image');
@@ -102,11 +102,8 @@ export default function ProfileImageUpload({
       /**
        * Delete image from server
        */
-      const response = await deleteProfileImage();
-      onImageChange?.(
-        (response as Record<string, unknown>)?.data?.data?.user
-          ?.profileImage as unknown
-      );
+      await deleteProfileImage();
+      onImageChange?.(undefined);
     } catch (err) {
       console.error('Error deleting image:', err);
       setError('Failed to delete image');
@@ -116,7 +113,7 @@ export default function ProfileImageUpload({
   };
 
   return (
-    <div className="relative">
+    <div className="flex flex-col items-center">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -126,58 +123,49 @@ export default function ProfileImageUpload({
         className="hidden"
       />
 
-      {/* Image display or upload prompt */}
-      {profileImage?.url ? (
-        // Existing image with overlay controls
-        <div className="relative w-24 h-24 rounded-[2.5rem] overflow-hidden border-2 border-primary/20">
-          <img
-            src={profileImage.url}
-            alt="Profile"
-            className="w-full h-full object-cover"
-          />
-          {/* Hover overlay with action buttons */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="p-2 bg-white rounded-full hover:bg-background transition-colors disabled:opacity-50"
-              aria-label="Change profile image"
-            >
-              {uploading ? (
-                <Loader size={16} className="animate-spin" />
-              ) : (
-                <Camera size={16} className="text-primary" />
-              )}
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={uploading}
-              className="p-2 bg-white rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
-              aria-label="Delete profile image"
-            >
-              <Trash2 size={16} className="text-red-500" />
-            </button>
-          </div>
+      <div className="relative w-28 h-28">
+        <div className={`w-28 h-28 rounded-full overflow-hidden bg-primary/10 ring-4 ring-white ${SOFT_SHADOW} flex items-center justify-center`}>
+          {profileImage?.url ? (
+            <img
+              src={profileImage.url}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User size={40} className="text-primary" strokeWidth={1.5} />
+          )}
+          {uploading && (
+            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+              <Loader size={22} className="text-white animate-spin" />
+            </div>
+          )}
         </div>
-      ) : (
-        // Upload prompt when no image
+
+        {/* Camera badge - always visible, tap to change photo */}
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mb-6 border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors disabled:opacity-50"
-          aria-label="Upload profile image"
+          className="absolute bottom-0 right-0 w-9 h-9 bg-primary rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(255,184,0,0.45)] ring-4 ring-white hover:scale-105 active:scale-95 transition-transform duration-200 disabled:opacity-50"
+          aria-label="Change profile photo"
         >
-          {uploading ? (
-            <Loader size={24} className="text-primary animate-spin" />
-          ) : (
-            <Camera size={24} className="text-primary" />
-          )}
+          <Camera size={16} className="text-white" />
+        </button>
+      </div>
+
+      {/* Remove photo */}
+      {profileImage?.url && (
+        <button
+          onClick={handleDelete}
+          disabled={uploading}
+          className="mt-3 text-red-500 font-inter text-xs font-semibold hover:opacity-70 transition-opacity duration-200 disabled:opacity-40"
+        >
+          Remove Photo
         </button>
       )}
 
       {/* Error message */}
       {error && (
-        <p className="text-red-500 text-xs font-inter mt-2">{error}</p>
+        <p className="text-red-500 text-xs font-inter mt-2 text-center">{error}</p>
       )}
     </div>
   );

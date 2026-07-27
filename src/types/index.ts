@@ -215,8 +215,14 @@ export interface Order {
   [key: string]: unknown;
 }
 
+export interface OrdersListResult {
+  orders: Order[];
+  totalPages: number;
+}
+
 export interface GetOrdersResponse {
-  data: Order[];
+  status: string;
+  data?: OrdersListResult;
 }
 
 export interface OrderDetails {
@@ -475,7 +481,7 @@ export interface ProtectedRouteProps {
 export interface NavItem {
   to: string;
   label: string;
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number; fill?: string; className?: string }>;
   featured?: boolean;
 }
 
@@ -539,7 +545,7 @@ export interface ProfileImage {
 }
 
 export interface ProfileImageUploadProps {
-  profileImage?: ProfileImage;
+  profileImage?: ProfileImage | undefined;
   onImageChange?: (imageData: ProfileImage | undefined) => void;
 }
 
