@@ -1,4 +1,4 @@
-import React, { useState, useEffect, type ReactElement } from 'react'
+import React, { useState, useEffect, Suspense, lazy, type ReactElement } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag } from 'lucide-react'
@@ -22,29 +22,41 @@ import { useInitializeStaffAuth } from './hooks/useInitializeStaffAuth.ts';
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import StaffProtectedRoute from './components/StaffProtectedRoute.tsx'
 
-// Pages
-import Home from './pages/Home.tsx'
-import Cart from './pages/Cart.tsx'
-import Scanner from './pages/Scanner.tsx'
-import ScanStore from './pages/ScanStore.tsx'
-import Onboarding from './pages/Onboarding.tsx'
-import Login from './pages/Login.tsx'
-import Profile from './pages/Profile.tsx'
-import History from './pages/History.tsx'
-import OrderDetails from './pages/OrderDetails.tsx'
-import PaymentSuccess from './pages/PaymentSuccess.tsx'
-import PaymentCancel from './pages/PaymentCancel.tsx'
-import ExitGate from './pages/ExitGate.tsx'
-import QRTest from './pages/QRTest.tsx'
-import StaffLogin from './pages/StaffLogin.tsx'
-import StaffHome from './pages/StaffHome.tsx'
-import StaffScanner from './pages/StaffScanner.tsx'
-import StaffVerifyResult from './pages/StaffVerifyResult.tsx'
-import StaffProfile from './pages/StaffProfile.tsx'
-import AdminApp from './AdminApp.tsx'
+// Pages (lazy-loaded: each becomes its own chunk, fetched only when its route is visited)
+const Home = lazy(() => import('./pages/Home.tsx'))
+const Cart = lazy(() => import('./pages/Cart.tsx'))
+const Scanner = lazy(() => import('./pages/Scanner.tsx'))
+const ScanStore = lazy(() => import('./pages/ScanStore.tsx'))
+const Onboarding = lazy(() => import('./pages/Onboarding.tsx'))
+const Login = lazy(() => import('./pages/Login.tsx'))
+const Profile = lazy(() => import('./pages/Profile.tsx'))
+const History = lazy(() => import('./pages/History.tsx'))
+const OrderDetails = lazy(() => import('./pages/OrderDetails.tsx'))
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess.tsx'))
+const PaymentCancel = lazy(() => import('./pages/PaymentCancel.tsx'))
+const ExitGate = lazy(() => import('./pages/ExitGate.tsx'))
+const QRTest = lazy(() => import('./pages/QRTest.tsx'))
+const StaffLogin = lazy(() => import('./pages/StaffLogin.tsx'))
+const StaffHome = lazy(() => import('./pages/StaffHome.tsx'))
+const StaffScanner = lazy(() => import('./pages/StaffScanner.tsx'))
+const StaffVerifyResult = lazy(() => import('./pages/StaffVerifyResult.tsx'))
+const StaffProfile = lazy(() => import('./pages/StaffProfile.tsx'))
+const AdminApp = lazy(() => import('./AdminApp.tsx'))
 
 // Initialize Interceptors
 setupInterceptors();
+
+/**
+ * Route Fallback Component
+ * Shown while a lazy-loaded route chunk is being fetched
+ */
+function RouteFallback(): ReactElement {
+  return (
+    <div className="flex-1 flex items-center justify-center py-24">
+      <div className="w-10 h-10 rounded-full border-[3px] border-primary/20 border-t-primary animate-spin" />
+    </div>
+  );
+}
 
 /**
  * App Content Component
@@ -133,28 +145,30 @@ function AppContent(): ReactElement {
             animate={{ opacity: 1 }}
             className="flex-1 flex flex-col"
           >
-            <Routes>
-              <Route path={PATHS.HOME} element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path={PATHS.CART} element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-              <Route path={PATHS.SCANNER} element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
-              <Route path={PATHS.SCAN_STORE} element={<ProtectedRoute><ScanStore /></ProtectedRoute>} />
-              <Route path={PATHS.EXIT_GATE} element={<ExitGate />} />
-              <Route path={PATHS.ONBOARDING} element={<Onboarding />} />
-              <Route path={PATHS.LOGIN} element={<Login />} />
-              <Route path={PATHS.STAFF_LOGIN} element={<StaffLogin />} />
-              <Route path={PATHS.STAFF_HOME} element={<StaffProtectedRoute><StaffHome /></StaffProtectedRoute>} />
-              <Route path={PATHS.STAFF_SCAN} element={<StaffProtectedRoute><StaffScanner /></StaffProtectedRoute>} />
-              <Route path={PATHS.STAFF_VERIFY} element={<StaffProtectedRoute><StaffVerifyResult /></StaffProtectedRoute>} />
-              <Route path={PATHS.STAFF_PROFILE} element={<StaffProtectedRoute><StaffProfile /></StaffProtectedRoute>} />
-              <Route path={PATHS.PROFILE} element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path={PATHS.HISTORY} element={<ProtectedRoute><History /></ProtectedRoute>} />
-              <Route path={PATHS.ORDER_DETAILS} element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
-              <Route path={PATHS.PAYMENT_SUCCESS} element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
-              <Route path={PATHS.PAYMENT_CANCEL} element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
-              <Route path={PATHS.QR_TEST} element={<QRTest />} />
-              <Route path="/admin/*" element={<AdminApp />} />
-              <Route path={PATHS.NOT_FOUND} element={<Navigate to={PATHS.ONBOARDING} replace />} />
-            </Routes>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path={PATHS.HOME} element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path={PATHS.CART} element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+                <Route path={PATHS.SCANNER} element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
+                <Route path={PATHS.SCAN_STORE} element={<ProtectedRoute><ScanStore /></ProtectedRoute>} />
+                <Route path={PATHS.EXIT_GATE} element={<ExitGate />} />
+                <Route path={PATHS.ONBOARDING} element={<Onboarding />} />
+                <Route path={PATHS.LOGIN} element={<Login />} />
+                <Route path={PATHS.STAFF_LOGIN} element={<StaffLogin />} />
+                <Route path={PATHS.STAFF_HOME} element={<StaffProtectedRoute><StaffHome /></StaffProtectedRoute>} />
+                <Route path={PATHS.STAFF_SCAN} element={<StaffProtectedRoute><StaffScanner /></StaffProtectedRoute>} />
+                <Route path={PATHS.STAFF_VERIFY} element={<StaffProtectedRoute><StaffVerifyResult /></StaffProtectedRoute>} />
+                <Route path={PATHS.STAFF_PROFILE} element={<StaffProtectedRoute><StaffProfile /></StaffProtectedRoute>} />
+                <Route path={PATHS.PROFILE} element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path={PATHS.HISTORY} element={<ProtectedRoute><History /></ProtectedRoute>} />
+                <Route path={PATHS.ORDER_DETAILS} element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
+                <Route path={PATHS.PAYMENT_SUCCESS} element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+                <Route path={PATHS.PAYMENT_CANCEL} element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+                <Route path={PATHS.QR_TEST} element={<QRTest />} />
+                <Route path="/admin/*" element={<AdminApp />} />
+                <Route path={PATHS.NOT_FOUND} element={<Navigate to={PATHS.ONBOARDING} replace />} />
+              </Routes>
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>

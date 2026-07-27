@@ -103,7 +103,7 @@ const Scanner: React.FC = (): React.ReactElement => {
 
     try {
       await addToCartMutation.mutateAsync({
-        productId: product._id || product.id || '',
+        productId: String(product._id || product.id || ''),
         quantity,
         storeId: localStorage.getItem('activeStoreId') || 'default-store',
       });
@@ -150,24 +150,27 @@ const Scanner: React.FC = (): React.ReactElement => {
 
   return (
     <div className="w-full h-full bg-[#0b1220] flex flex-col relative overflow-hidden pb-24">
+      {/* Decorative glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-72 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+
       <ActiveStoreBanner />
 
       {/* Header */}
-      <header className="w-full px-4 py-4 flex items-center justify-between relative z-20 bg-[#0b1220]">
+      <header className="w-full px-4 py-4 flex items-center justify-between relative z-20">
         <button
           onClick={handleNavigateBack}
-          className="bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all active:scale-95"
+          className="bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-colors duration-200 active:scale-95 ring-1 ring-white/10"
         >
-          <ChevronLeft size={22} className="text-white" />
+          <ChevronLeft size={20} className="text-white" />
         </button>
-        <h1 className="text-white font-bold text-lg">QuickCart</h1>
-        <button className="bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all active:scale-95">
-          <Bell size={20} className="text-white" />
+        <h1 className="text-white font-poppins font-bold text-lg">QuickCart</h1>
+        <button className="bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-colors duration-200 active:scale-95 ring-1 ring-white/10">
+          <Bell size={18} className="text-white" />
         </button>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full flex flex-col items-center relative overflow-y-auto px-6 pt-6">
+      <main className="flex-1 w-full flex flex-col items-center relative overflow-y-auto px-6 pt-4">
         <AnimatePresence mode="wait">
           {!showProduct ? (
             <motion.div
@@ -179,8 +182,8 @@ const Scanner: React.FC = (): React.ReactElement => {
               className="w-full flex flex-col items-center space-y-8"
             >
               <div className="text-center space-y-1.5">
-                <h2 className="text-white text-2xl font-bold">Scan Product</h2>
-                <p className="text-primary-container text-sm font-medium">
+                <h2 className="text-white font-poppins text-2xl font-extrabold tracking-tight">Scan Product</h2>
+                <p className="text-white/60 font-inter text-sm font-medium">
                   Scan the product barcode to add to cart
                 </p>
               </div>
@@ -198,12 +201,13 @@ const Scanner: React.FC = (): React.ReactElement => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 max-w-md w-full"
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="flex items-start gap-3 bg-yellow-500/10 ring-1 ring-yellow-500/25 rounded-[18px] p-4 max-w-md w-full"
                 >
                   <AlertCircle size={20} className="text-yellow-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-yellow-300 text-sm font-semibold">Camera Not Available</p>
-                    <p className="text-yellow-200/80 text-xs mt-1">
+                    <p className="text-yellow-300 font-inter text-sm font-semibold">Camera Not Available</p>
+                    <p className="text-yellow-200/70 font-inter text-xs mt-1">
                       Please grant camera permission or type barcode manually
                     </p>
                   </div>
@@ -214,12 +218,13 @@ const Scanner: React.FC = (): React.ReactElement => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 max-w-md w-full"
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="flex items-start gap-3 bg-red-500/10 ring-1 ring-red-500/25 rounded-[18px] p-4 max-w-md w-full"
                 >
                   <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-red-300 text-sm font-semibold">Product Not Found</p>
-                    <p className="text-red-200/80 text-xs mt-1">
+                    <p className="text-red-300 font-inter text-sm font-semibold">Product Not Found</p>
+                    <p className="text-red-200/70 font-inter text-xs mt-1">
                       Product not available in this store. Try another barcode.
                     </p>
                   </div>
@@ -230,7 +235,7 @@ const Scanner: React.FC = (): React.ReactElement => {
               {!showManualInput ? (
                 <button
                   onClick={() => setShowManualInput(true)}
-                  className="flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 text-white/60 hover:text-white text-sm font-inter font-medium transition-colors duration-200"
                 >
                   <Keyboard size={16} />
                   Type barcode manually
@@ -239,7 +244,8 @@ const Scanner: React.FC = (): React.ReactElement => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="w-full max-w-sm space-y-2"
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="w-full max-w-sm space-y-2.5"
                 >
                   <input
                     type="text"
@@ -247,15 +253,14 @@ const Scanner: React.FC = (): React.ReactElement => {
                     onChange={(e) => setManualBarcode(e.target.value)}
                     onKeyPress={handleManualInputKeyPress}
                     placeholder="Enter barcode"
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-primary focus:bg-white/15 transition-all text-sm"
+                    className="w-full px-4 py-3.5 rounded-[16px] bg-white/10 ring-1 ring-white/15 text-white placeholder-white/40 focus:outline-none focus:ring-4 focus:ring-primary/25 focus:bg-white/15 transition-all duration-200 font-inter text-sm"
                     autoFocus
                   />
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={handleManualSearch}
                     disabled={isSearching || !manualBarcode.trim()}
-                    className="w-full px-4 py-3 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-all flex items-center justify-center gap-2 shadow-lg"
+                    className="w-full px-4 py-3.5 rounded-[16px] bg-gradient-to-br from-primary to-[#FF9F1C] disabled:opacity-50 disabled:cursor-not-allowed text-white font-poppins font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,184,0,0.3)]"
                   >
                     {isSearching ? (
                       <>

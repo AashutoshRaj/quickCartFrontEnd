@@ -5,7 +5,7 @@
 
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import apiClient from '../../api/axios.ts';
-import type { BarcodeSearchOptions } from '../../types/index';
+import type { BarcodeSearchOptions, Product } from '../../types/index';
 
 /**
  * Hook to search for products by barcode
@@ -17,7 +17,7 @@ import type { BarcodeSearchOptions } from '../../types/index';
  * @param {string} [storeId] - Store ID for store-scoped product validation
  * @param {BarcodeSearchOptions} [options] - Additional React Query options
  * @returns {UseQueryResult} Query result with product data
- * @returns {unknown | undefined} data - Product information if found
+ * @returns {Product | undefined} data - Product information if found
  * @returns {boolean} isLoading - Loading state
  * @returns {boolean} isError - Error state
  * @returns {Error | null} error - Error object if query fails
@@ -40,10 +40,10 @@ export const useBarcodeSearch = (
   barcode: string,
   storeId?: string,
   options: BarcodeSearchOptions = {}
-): UseQueryResult<unknown, Error> => {
+): UseQueryResult<Product, Error> => {
   return useQuery({
     queryKey: ['product', 'barcode', barcode, storeId],
-    queryFn: async (): Promise<unknown> => {
+    queryFn: async (): Promise<Product> => {
       /**
        * Validate barcode input
        */
@@ -61,8 +61,7 @@ export const useBarcodeSearch = (
       /**
        * Extract product from response (supports multiple response formats)
        */
-      return (response as Record<string, unknown>).data?.data?.product ||
-        (response as Record<string, unknown>).data?.product;
+      return (response.data?.data?.product || response.data?.product) as Product;
     },
     enabled: !!barcode && barcode.trim().length > 0,
     staleTime: 1000 * 60 * 5, // 5 minutes

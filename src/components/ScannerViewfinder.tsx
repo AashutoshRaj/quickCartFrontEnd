@@ -36,7 +36,7 @@ export const ScannerViewfinder: React.FC<ScannerViewfinderProps> = ({
   return (
     <div className="flex flex-col items-center gap-5 w-full">
       {/* Frame */}
-      <div className="relative w-full max-w-sm aspect-square rounded-3xl overflow-hidden bg-[#0b1220] border border-white/10 shadow-2xl">
+      <div className="relative w-full max-w-sm aspect-square rounded-[28px] overflow-hidden bg-[#0b1220] ring-1 ring-white/10 shadow-[0_20px_60px_rgba(255,184,0,0.12)]">
         <div id="scanner-container" className="w-full h-full" />
 
         {/* Corner Guides */}
@@ -54,7 +54,7 @@ export const ScannerViewfinder: React.FC<ScannerViewfinderProps> = ({
                 ? { duration: 2, repeat: Infinity, ease: 'linear' }
                 : { duration: 0.3 }
             }
-            className="absolute left-2 right-2 h-0.5 bg-primary shadow-[0_0_12px_var(--color-primary-container)]"
+            className="absolute left-2 right-2 h-0.5 bg-primary shadow-[0_0_12px_rgba(255,184,0,0.8)]"
           />
         </div>
 
@@ -77,10 +77,10 @@ export const ScannerViewfinder: React.FC<ScannerViewfinderProps> = ({
       {/* Torch Toggle */}
       <button
         onClick={onToggleTorch}
-        className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all active:scale-95 ${
+        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 ${
           torchOn
-            ? 'bg-primary border-primary text-white'
-            : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+            ? 'bg-primary text-white shadow-[0_6px_16px_rgba(255,184,0,0.4)]'
+            : 'bg-white/10 ring-1 ring-white/15 text-white hover:bg-white/15'
         }`}
         title="Toggle flashlight"
       >
@@ -88,7 +88,7 @@ export const ScannerViewfinder: React.FC<ScannerViewfinderProps> = ({
       </button>
 
       {/* Status Pill */}
-      <div className="px-5 py-2 rounded-full bg-white/10 border border-white/10">
+      <div className="px-5 py-2 rounded-full bg-white/10 ring-1 ring-white/10 backdrop-blur-sm">
         <p className="text-white/80 text-xs font-semibold uppercase tracking-wider text-center">
           {statusText}
         </p>
