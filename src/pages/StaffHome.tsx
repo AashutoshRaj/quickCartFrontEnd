@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { QrCode, Clock, CheckCircle2, User, Loader2 } from 'lucide-react';
 import { PATHS } from '../app/paths';
-import { getStaffDashboardStats, StaffDashboardStats } from '../api/staffVerificationApi';
+import { getStaffDashboardStats, type StaffDashboardStats } from '../api/staffVerificationApi';
 import type { RootState } from '../types/index';
 
 /**

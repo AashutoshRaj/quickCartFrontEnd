@@ -3,7 +3,7 @@
  * Fetches the current shopping cart contents
  */
 
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import cartService from '../../api/services/cartService.ts';
 import type { GetCartResponse } from '../../types/index';
 

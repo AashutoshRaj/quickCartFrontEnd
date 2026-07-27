@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PATHS } from '../app/paths';
-import { verifyExitQr, approveExit, VerifyResult } from '../api/staffVerificationApi';
+import { verifyExitQr, approveExit, type VerifyResult } from '../api/staffVerificationApi';
 
 type ScreenState = 'loading' | 'error' | VerifyResult['result'] | 'approved';
 

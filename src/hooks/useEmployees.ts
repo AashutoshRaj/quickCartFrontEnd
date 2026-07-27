@@ -7,9 +7,9 @@ import {
   resetEmployeePassword,
   deleteEmployee,
   sendEmployeeCredentials,
-  EmployeeListFilters,
-  CreateEmployeePayload,
-  EmployeeStatus,
+  type EmployeeListFilters,
+  type CreateEmployeePayload,
+  type EmployeeStatus,
 } from '../api/employeeApi';
 
 const EMPLOYEES_KEY = ['employees'];

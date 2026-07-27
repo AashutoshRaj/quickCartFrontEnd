@@ -3,7 +3,7 @@
  * Redux Toolkit slice for managing authentication state
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { AuthStateType, SetAuthPayload, FirebaseUserData } from '../../types/index';
 
 /**

@@ -3,7 +3,7 @@
  * React Query hooks for authentication operations
  */
 
-import { useMutation, UseMutationResult } from '@tanstack/react-query';
+import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import authService from '../api/services/authService.ts';
 import { logout, setAuth } from '../store/slices/authSlice.ts';

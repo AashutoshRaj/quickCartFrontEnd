@@ -3,7 +3,7 @@
  * Fetches store information by store ID using React Query
  */
 
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import apiClient from '../../api/axios.ts';
 import type { ScanStoreOptions, ActiveStore } from '../../types/index';
 

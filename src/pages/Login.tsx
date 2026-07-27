@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm, useWatch, FieldValues } from 'react-hook-form';
+import { useForm, useWatch, type FieldValues } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ShoppingBag, Loader2 } from 'lucide-react';

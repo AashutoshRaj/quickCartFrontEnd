@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm, FieldValues } from 'react-hook-form';
+import { useForm, type FieldValues } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';

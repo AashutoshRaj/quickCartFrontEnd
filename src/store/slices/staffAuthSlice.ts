@@ -5,7 +5,7 @@
  * different actor shape, so customer and staff sessions never collide.
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { StaffAuthStateType, SetStaffAuthPayload } from '../../types/index';
 
 const initializeStaffAuthState = (): StaffAuthStateType => {

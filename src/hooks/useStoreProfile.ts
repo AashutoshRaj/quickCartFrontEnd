@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getStoreProfile, StoreData } from '../api/storeApi';
+import { getStoreProfile, type StoreData } from '../api/storeApi';
 
 type StoreProfile = StoreData;
 

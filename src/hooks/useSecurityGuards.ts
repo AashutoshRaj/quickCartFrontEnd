@@ -8,8 +8,8 @@ import {
   resetSecurityGuardPassword,
   deleteSecurityGuard,
   sendSecurityGuardCredentials,
-  SecurityGuardListFilters,
-  CreateSecurityGuardPayload,
+  type SecurityGuardListFilters,
+  type CreateSecurityGuardPayload,
 } from '../api/securityGuardApi';
 
 const GUARDS_KEY = ['securityGuards'];

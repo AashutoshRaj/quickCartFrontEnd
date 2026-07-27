@@ -3,7 +3,7 @@
  * Manages adding products to shopping cart
  */
 
-import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import cartService from '../../api/services/cartService.ts';
 import type { AddToCartParams, AddToCartResponse } from '../../types/index';

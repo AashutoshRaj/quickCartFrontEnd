@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { type ReactElement } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { PrivateRoute } from './admin-routes/PrivateRoute';
 import { AuthProvider } from './admin-auth/AuthContext';

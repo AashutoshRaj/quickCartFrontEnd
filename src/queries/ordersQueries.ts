@@ -6,8 +6,8 @@
 import {
   useQuery,
   useMutation,
-  UseQueryResult,
-  UseMutationResult,
+  type UseQueryResult,
+  type UseMutationResult,
 } from '@tanstack/react-query';
 import ordersService from '../api/services/ordersService.ts';
 import type { GetOrdersParams } from '../types/index';

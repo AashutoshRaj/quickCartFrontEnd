@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { toast } from 'sonner';

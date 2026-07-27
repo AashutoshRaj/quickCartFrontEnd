@@ -3,9 +3,9 @@
  * Manages payment checkout session creation and Stripe redirect
  */
 
-import { useMutation, UseMutationResult } from '@tanstack/react-query';
+import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import cartService from '../../api/services/cartService.ts';
 import type { CheckoutSessionResponse } from '../../types/index';
 

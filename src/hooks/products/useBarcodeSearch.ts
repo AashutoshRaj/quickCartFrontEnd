@@ -3,7 +3,7 @@
  * Fetches product information by barcode using React Query
  */
 
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import apiClient from '../../api/axios.ts';
 import type { BarcodeSearchOptions } from '../../types/index';
 

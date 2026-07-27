@@ -3,7 +3,7 @@
  * Redux Toolkit slice for managing active store information
  */
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { StoreStateType, ActiveStore, SetActiveStorePayload } from '../../types/index';
 
 /**
