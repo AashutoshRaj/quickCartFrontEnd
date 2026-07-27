@@ -9,6 +9,13 @@ export const PATHS = {
   SIGNUP: '/signup',
   ONBOARDING: '/onboarding',
 
+  // Staff App Routes
+  STAFF_LOGIN: '/staff-login',
+  STAFF_HOME: '/staff-home',
+  STAFF_SCAN: '/staff-scan',
+  STAFF_VERIFY: '/staff-verify/:sessionId',
+  STAFF_PROFILE: '/staff-profile',
+
   // Customer App Routes
   HOME: '/',
   SCAN_STORE: '/scan-store',
@@ -86,3 +93,6 @@ export type RoutePath = typeof PATHS[keyof typeof PATHS];
  */
 export const getOrderDetailsPath = (orderId: string): string =>
   PATHS.ORDER_DETAILS.replace(':orderId', orderId);
+
+export const getStaffVerifyPath = (sessionId: string): string =>
+  PATHS.STAFF_VERIFY.replace(':sessionId', encodeURIComponent(sessionId));

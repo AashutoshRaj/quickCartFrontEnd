@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Radio, ShoppingCart, Package, Users, BarChart3, Tag,
   UserCog, DoorOpen, Bell, Settings, List, Grid3X3, Scan, Upload, Warehouse,
   CheckCircle, RefreshCcw, Star, History, TrendingUp, FileText, Target,
-  Ticket, Percent, Megaphone, UserSquare, Shield, MessageSquare, Mail, Store,
+  Ticket, Percent, Megaphone, UserSquare, Shield, ShieldCheck, MessageSquare, Mail, Store,
   CreditCard, Plug, Lock,
 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
@@ -27,6 +27,7 @@ import { CouponsPage } from '../pages/admin/promotions/CouponsPage';
 import { DiscountsPage } from '../pages/admin/promotions/DiscountsPage';
 import { CampaignsPage } from '../pages/admin/promotions/CampaignsPage';
 import { EmployeesPage } from '../pages/admin/staff/EmployeesPage';
+import { SecurityGuardsPage } from '../pages/admin/staff/SecurityGuardsPage';
 import { RolesPermissionsPage } from '../pages/admin/staff/RolesPermissionsPage';
 import { SmsCampaignsPage } from '../pages/admin/notifications/SmsCampaignsPage';
 import { PushNotificationsPage } from '../pages/admin/notifications/PushNotificationsPage';
@@ -81,6 +82,7 @@ export const ADMIN_PATHS = {
   },
   staff: {
     employees: `${ADMIN_BASE_PATH}/staff/employees`,
+    securityGuards: `${ADMIN_BASE_PATH}/staff/security-guards`,
     rolesPermissions: `${ADMIN_BASE_PATH}/staff/roles-permissions`,
   },
   notifications: {
@@ -179,6 +181,7 @@ export const adminNavigation: AdminRouteConfig[] = [
     element: <Navigate to={ADMIN_PATHS.staff.employees} replace />,
     children: [
       { path: ADMIN_PATHS.staff.employees, label: 'Employees', icon: UserSquare, element: <EmployeesPage /> },
+      { path: ADMIN_PATHS.staff.securityGuards, label: 'Security Guards', icon: ShieldCheck, element: <SecurityGuardsPage /> },
       { path: ADMIN_PATHS.staff.rolesPermissions, label: 'Roles & Permissions', icon: Shield, element: <RolesPermissionsPage /> },
     ],
   },

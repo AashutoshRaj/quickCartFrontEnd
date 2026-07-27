@@ -353,9 +353,38 @@ export interface StoreStateType {
   activeStore: ActiveStore | null;
 }
 
+/**
+ * Staff (Security Guard / Employee) auth state — kept fully separate from
+ * the customer `auth` slice per the mobile app's "separate auth flows" requirement
+ */
+export interface StaffUser {
+  actorType: 'guard' | 'employee';
+  id: string;
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  shift?: string;
+  storeId: string;
+  storeName: string;
+}
+
+export interface StaffAuthStateType {
+  staffUser: StaffUser | null;
+  staffToken: string | null;
+  isStaffAuthenticated: boolean;
+}
+
+export interface SetStaffAuthPayload {
+  staffUser: StaffUser;
+  staffToken: string;
+}
+
 export interface RootState {
   auth: AuthStateType;
   store: StoreStateType;
+  staffAuth: StaffAuthStateType;
 }
 
 /**

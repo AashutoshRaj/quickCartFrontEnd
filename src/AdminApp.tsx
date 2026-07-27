@@ -32,6 +32,7 @@ import { CouponsPage } from './pages/admin/promotions/CouponsPage';
 import { DiscountsPage } from './pages/admin/promotions/DiscountsPage';
 import { CampaignsPage } from './pages/admin/promotions/CampaignsPage';
 import { EmployeesPage } from './pages/admin/staff/EmployeesPage';
+import { SecurityGuardsPage } from './pages/admin/staff/SecurityGuardsPage';
 import { RolesPermissionsPage } from './pages/admin/staff/RolesPermissionsPage';
 import { SmsCampaignsPage } from './pages/admin/notifications/SmsCampaignsPage';
 import { PushNotificationsPage } from './pages/admin/notifications/PushNotificationsPage';
@@ -97,6 +98,7 @@ const AdminApp = (): ReactElement => {
 
           {/* Staff */}
           <Route path="staff/employees" element={<EmployeesPage />} />
+          <Route path="staff/security-guards" element={<SecurityGuardsPage />} />
           <Route path="staff/roles-permissions" element={<RolesPermissionsPage />} />
 
           {/* Notifications */}

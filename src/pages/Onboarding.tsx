@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Smartphone, CreditCard, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Smartphone, ChevronRight, ShieldCheck } from 'lucide-react';
 import { PATHS } from '../app/paths';
 
 /**
@@ -67,8 +67,16 @@ const Onboarding: React.FC = (): React.ReactElement => {
           to={PATHS.LOGIN}
           className="w-full bg-primary flex items-center justify-center gap-3 py-5 rounded-2xl shadow-xl hover:bg-primary/90 transition-all text-white font-poppins font-bold text-lg group"
         >
-          Get Started
+          I'm a Customer
           <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
+
+        <Link
+          to={PATHS.STAFF_LOGIN}
+          className="w-full bg-white border border-outline/10 flex items-center justify-center gap-3 py-4 rounded-2xl shadow-sm hover:bg-background transition-all text-on-surface font-poppins font-semibold text-base group"
+        >
+          <ShieldCheck size={18} className="text-primary" />
+          Staff / Security Guard
         </Link>
       </div>
     </div>

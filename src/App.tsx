@@ -16,9 +16,11 @@ import { PATHS } from './app/paths';
 
 // Hooks
 import { useInitializeAuth } from './hooks/useInitializeAuth.ts';
+import { useInitializeStaffAuth } from './hooks/useInitializeStaffAuth.ts';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import StaffProtectedRoute from './components/StaffProtectedRoute.tsx'
 
 // Pages
 import Home from './pages/Home.tsx'
@@ -34,6 +36,11 @@ import PaymentSuccess from './pages/PaymentSuccess.tsx'
 import PaymentCancel from './pages/PaymentCancel.tsx'
 import ExitGate from './pages/ExitGate.tsx'
 import QRTest from './pages/QRTest.tsx'
+import StaffLogin from './pages/StaffLogin.tsx'
+import StaffHome from './pages/StaffHome.tsx'
+import StaffScanner from './pages/StaffScanner.tsx'
+import StaffVerifyResult from './pages/StaffVerifyResult.tsx'
+import StaffProfile from './pages/StaffProfile.tsx'
 import AdminApp from './AdminApp.tsx'
 
 // Initialize Interceptors
@@ -48,6 +55,8 @@ function AppContent(): ReactElement {
 
   // Initialize Firebase authentication state on app load
   useInitializeAuth();
+  // Initialize staff (Security Guard / Employee) authentication state on app load
+  useInitializeStaffAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2500);
@@ -62,8 +71,13 @@ function AppContent(): ReactElement {
     PATHS.HISTORY,
     PATHS.PROFILE,
     PATHS.LOGIN,
+    PATHS.STAFF_LOGIN,
+    PATHS.STAFF_HOME,
+    PATHS.STAFF_SCAN,
+    PATHS.STAFF_PROFILE,
   ].some((path) => path === location.pathname) ||
-    location.pathname.match(/^\/history\/[^\/]+$/) !== null;
+    location.pathname.match(/^\/history\/[^\/]+$/) !== null ||
+    location.pathname.match(/^\/staff-verify\/[^\/]+$/) !== null;
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -127,6 +141,11 @@ function AppContent(): ReactElement {
               <Route path={PATHS.EXIT_GATE} element={<ExitGate />} />
               <Route path={PATHS.ONBOARDING} element={<Onboarding />} />
               <Route path={PATHS.LOGIN} element={<Login />} />
+              <Route path={PATHS.STAFF_LOGIN} element={<StaffLogin />} />
+              <Route path={PATHS.STAFF_HOME} element={<StaffProtectedRoute><StaffHome /></StaffProtectedRoute>} />
+              <Route path={PATHS.STAFF_SCAN} element={<StaffProtectedRoute><StaffScanner /></StaffProtectedRoute>} />
+              <Route path={PATHS.STAFF_VERIFY} element={<StaffProtectedRoute><StaffVerifyResult /></StaffProtectedRoute>} />
+              <Route path={PATHS.STAFF_PROFILE} element={<StaffProtectedRoute><StaffProfile /></StaffProtectedRoute>} />
               <Route path={PATHS.PROFILE} element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path={PATHS.HISTORY} element={<ProtectedRoute><History /></ProtectedRoute>} />
               <Route path={PATHS.ORDER_DETAILS} element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />

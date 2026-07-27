@@ -7,6 +7,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import type { PreloadedState } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice.ts';
 import storeReducer from './slices/storeSlice.ts';
+import staffAuthReducer from './slices/staffAuthSlice.ts';
 import type { RootState } from '../types/index';
 
 /**
@@ -17,6 +18,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     store: storeReducer,
+    staffAuth: staffAuthReducer,
   },
 });
 
