@@ -298,35 +298,6 @@ export interface UploadProfileImageRequest {
 }
 
 /**
- * MSG91 OTP Types
- */
-export interface MSG91WidgetConfig {
-  widgetId: string;
-  tokenAuth: string;
-  identifier: string;
-  exposeMethods: boolean;
-  success: (data: MSG91SuccessData) => void;
-  failure: (error: MSG91ErrorData) => void;
-}
-
-export interface MSG91SuccessData {
-  message: string;
-  [key: string]: unknown;
-}
-
-export interface MSG91ErrorData {
-  message?: string;
-  error?: string;
-  [key: string]: unknown;
-}
-
-export interface SendOTPInitConfig {
-  phoneNumber: string;
-  onSuccess: (accessToken: string) => void;
-  onFailure: (error: MSG91ErrorData) => void;
-}
-
-/**
  * Redux State Types
  */
 export interface FirebaseUserData {
