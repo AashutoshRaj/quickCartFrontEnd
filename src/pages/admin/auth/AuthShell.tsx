@@ -10,9 +10,9 @@ interface AuthShellProps {
 
 export function AuthShell({ children, title, subtitle }: AuthShellProps) {
   return (
-    <section className="grid min-h-[720px] w-full max-w-[1720px] overflow-hidden rounded-xl bg-white shadow-[0_28px_70px_rgba(15,23,42,0.08)] lg:grid-cols-[1fr_1fr]">
+    <section className="grid w-full max-w-[1720px] overflow-hidden rounded-xl bg-white shadow-[0_28px_70px_rgba(15,23,42,0.08)] lg:grid-cols-[1fr_1fr]">
       <aside className="relative hidden bg-[#243242] px-16 py-16 text-white lg:flex lg:flex-col">
-        <Link to="/auth/signup" className="flex items-center gap-4 text-[#37ff84]">
+        <Link to="/home" className="flex items-center gap-4 text-[#37ff84]">
           <ShoppingCart className="h-11 w-11" strokeWidth={2.8} />
           <span className="text-3xl" style={{ fontWeight: 800 }}>QuickCart</span>
         </Link>

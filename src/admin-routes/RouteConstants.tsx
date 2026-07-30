@@ -197,16 +197,16 @@ export const adminNavigation: AdminRouteConfig[] = [
     ],
   },
   {
-    path: `${ADMIN_BASE_PATH}/settings`,
+    path: `${ADMIN_BASE_PATH}/settings/store`,
     label: 'Settings',
     icon: Settings,
     element: <Navigate to={ADMIN_PATHS.settings.store} replace />,
-    children: [
-      { path: ADMIN_PATHS.settings.store, label: 'Store Settings', icon: Store, element: <StoreSettingsPage /> },
-      { path: ADMIN_PATHS.settings.payments, label: 'Payment Methods', icon: CreditCard, element: <PaymentMethodsPage /> },
-      { path: ADMIN_PATHS.settings.integrations, label: 'Integrations', icon: Plug, element: <IntegrationsPage /> },
-      { path: ADMIN_PATHS.settings.security, label: 'Security', icon: Lock, element: <SecurityPage /> },
-    ],
+    // children: [
+    //   { path: ADMIN_PATHS.settings.store, label: 'Store Settings', icon: Store, element: <StoreSettingsPage /> },
+    //   { path: ADMIN_PATHS.settings.payments, label: 'Payment Methods', icon: CreditCard, element: <PaymentMethodsPage /> },
+    //   { path: ADMIN_PATHS.settings.integrations, label: 'Integrations', icon: Plug, element: <IntegrationsPage /> },
+    //   { path: ADMIN_PATHS.settings.security, label: 'Security', icon: Lock, element: <SecurityPage /> },
+    // ],
   },
   { path: ADMIN_PATHS.exitGate, label: 'Exit Gate', icon: DoorOpen, element: <ExitGatePage /> },
   { path: ADMIN_PATHS.liveMonitor, label: 'Live Monitor', icon: Radio, element: <LiveMonitorPage /> },

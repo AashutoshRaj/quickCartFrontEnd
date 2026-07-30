@@ -8,6 +8,8 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { useAuth } from '../../../admin-auth/AuthContext';
 
 const kpiCards = [
   { label: "Today's Revenue", value: '$24,839', change: '+12.4%', up: true, icon: TrendingUp, color: 'bg-green-50 text-green-600' },
@@ -75,6 +77,16 @@ const quickActions = [
 
 export function DashboardPage() {
   const [revenueRange, setRevenueRange] = useState('7d');
+  const { user } = useAuth();
+  const { data: storeProfile } = useStoreProfile();
+
+  const dashboardDate = new Intl.DateTimeFormat(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date());
+  const storeName = storeProfile?.name || user?.storeName || 'Your Store';
 
   return (
     <div className="p-6 space-y-6">
@@ -82,7 +94,7 @@ export function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl text-gray-900" style={{ fontWeight: 600 }}>Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Saturday, June 13, 2026 · QuickCart Flagship Store</p>
+          <p className="text-sm text-gray-500 mt-0.5">{dashboardDate} · {storeName}</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
           <RefreshCw className="w-4 h-4" />
