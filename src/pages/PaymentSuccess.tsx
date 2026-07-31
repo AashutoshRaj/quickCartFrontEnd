@@ -2,10 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSelector } from 'react-redux';
 import QRCode from 'qrcode';
 import { PATHS } from '../app/paths';
 import cartService from '../api/services/cartService.ts';
 import apiClient from '../api/axios.ts';
+import { formatCurrency } from '../utils/currency.ts';
+import type { RootState } from '../types/index';
 
 interface OrderDetails {
   _id?: string;
@@ -30,6 +33,7 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
   const sessionId = searchParams.get('session_id');
   const queryClient = useQueryClient();
   const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const { activeStore } = useSelector((state: RootState) => state.store);
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(true);
 
@@ -39,8 +43,10 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
         // Mark order as completed
         if (sessionId) {
           await apiClient.post('/checkout/complete', { sessionId });
-          // Invalidate orders query to refresh history
-          queryClient.invalidateQueries({ queryKey: ['orders'] });
+          // Invalidate orders, product, and category caches so inventory reflects the purchase
+          queryClient.invalidateQueries({ queryKey: ['orders'], exact: false });
+          queryClient.invalidateQueries({ queryKey: ['products'], exact: false });
+          queryClient.invalidateQueries({ queryKey: ['product-categories'], exact: false });
         }
 
         // Clear cart
@@ -138,7 +144,7 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
                 <div className="flex justify-between items-start text-sm">
                   <span className="text-gray-600 font-medium">Total Paid</span>
                   <span className="text-green-600 font-bold text-lg">
-                    {paidTotal != null ? `$${paidTotal.toFixed(2)}` : '—'}
+                    {paidTotal != null ? formatCurrency(paidTotal, order?.currency || activeStore?.currency || 'USD') : '—'}
                   </span>
                 </div>
                 <div className="border-t border-gray-200" />

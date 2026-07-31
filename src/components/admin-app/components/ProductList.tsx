@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { FileText, Search, Loader2 } from 'lucide-react';
 import useProducts from '../../../admin-hooks/products/useProducts';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import type { RootState } from '../../../types/index';
+import { formatCurrency } from '../../../utils/currency';
 
 export function ProductList() {
   const [page, setPage] = useState(1);
@@ -12,6 +16,8 @@ export function ProductList() {
   const limit = 20;
 
   const { data, isLoading, isError } = useProducts(page, limit, search, category, status, sortBy, sortOrder);
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || useSelector((state: RootState) => state.store.activeStore?.currency || 'USD');
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -122,15 +128,15 @@ export function ProductList() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{product.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{product.category || '—'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                  ${product.price.toFixed(2)}
+                  {formatCurrency(Number(product.price || 0), currency)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    product.stock > 0 
-                      ? 'bg-green-100 text-green-700' 
+                    Number(product.stock || 0) > 0
+                      ? 'bg-green-100 text-green-700'
                       : 'bg-red-100 text-red-700'
                   }`}>
-                    {product.stock}
+                    {Number(product.stock || 0) > 0 ? `${Number(product.stock).toLocaleString()} Pieces` : '0 Pieces'}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">

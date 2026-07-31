@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { CheckCircle2, AlertCircle, LogOut, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { PATHS } from '../app/paths';
+import { formatCurrency } from '../utils/currency.ts';
+import type { RootState } from '../types/index';
 
 interface OrderItem {
   name?: string;
@@ -28,6 +31,7 @@ interface OrderData {
  */
 const ExitGate: React.FC = (): React.ReactElement => {
   const [scanned, setScanned] = useState<boolean>(false);
+  const { activeStore } = useSelector((state: RootState) => state.store);
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [exited, setExited] = useState<boolean>(false);
@@ -179,7 +183,7 @@ const ExitGate: React.FC = (): React.ReactElement => {
                   <div key={idx} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900">{item.name || item.productName}</p>
-                      <p className="text-sm text-gray-600">Price: ${item.price?.toFixed(2)}</p>
+                      <p className="text-sm text-gray-600">Price: {formatCurrency(Number(item.price || 0), orderData?.currency || activeStore?.currency || 'USD')}</p>
                     </div>
                     <div className="bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-sm font-semibold">
                       x{item.quantity}
@@ -196,7 +200,7 @@ const ExitGate: React.FC = (): React.ReactElement => {
           <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border-2 border-green-200">
             <div className="flex justify-between items-center">
               <span className="text-lg font-semibold text-gray-900">Total Amount</span>
-              <span className="text-2xl font-bold text-green-600">${orderData.totalAmount?.toFixed(2) || '0.00'}</span>
+              <span className="text-2xl font-bold text-green-600">{formatCurrency(Number(orderData.totalAmount || 0), orderData?.currency || activeStore?.currency || 'USD')}</span>
             </div>
           </div>
 

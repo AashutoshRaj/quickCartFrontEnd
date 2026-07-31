@@ -5,8 +5,10 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
 import { ShoppingCart, Plus, Minus, Leaf, MapPinned } from 'lucide-react';
-import type { ProductCardProps } from '../types/index';
+import type { ProductCardProps, RootState } from '../types/index';
+import { formatCurrency } from '../utils/currency.ts';
 
 const SOFT_SHADOW = 'shadow-[0_2px_8px_rgba(15,23,42,0.04),0_12px_30px_rgba(15,23,42,0.08)]';
 
@@ -55,7 +57,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   /**
    * Check if product is out of stock
    */
-  const isOutOfStock = product.stock === 0;
+  const availableStock = Math.max(0, Number(product.stock || 0));
+  const isOutOfStock = availableStock === 0;
 
   /**
    * Handle add to cart with quantity reset
@@ -69,9 +72,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
    * Handle quantity change with validation
    */
   const handleQuantityChange = (value: number): void => {
-    const newQuantity = Math.max(1, Math.min(value, product.stock));
+    const newQuantity = Math.max(1, Math.min(value, availableStock));
     setQuantity(newQuantity);
   };
+
+  const currency = useSelector((state: RootState) => state.store.activeStore?.currency || 'USD');
 
   return (
     <motion.div
@@ -132,13 +137,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 className="flex items-baseline gap-1"
               >
                 <span className="text-primary font-poppins font-bold text-2xl">
-                  ₹{product.price.toFixed(2)}
+                  {formatCurrency(product.price, currency)}
                 </span>
                 <span className="text-secondary font-inter text-xs font-medium">/ unit</span>
               </motion.div>
             </div>
           </div>
         </div>
+
+        <p className={`text-xs font-inter ${isOutOfStock ? 'text-red-500 font-semibold' : 'text-secondary'}`}>
+          {isOutOfStock ? '0 Pieces • Out of Stock' : `${availableStock} Pieces available`}
+        </p>
 
         {/* Quantity Selector and Add to Cart */}
         <motion.div
@@ -165,11 +174,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               disabled={isOutOfStock}
               className="w-9 text-center font-poppins font-bold text-sm bg-transparent text-on-surface focus:outline-none disabled:opacity-50"
               min="1"
-              max={product.stock}
+              max={availableStock}
             />
             <button
               onClick={() => handleQuantityChange(quantity + 1)}
-              disabled={quantity >= product.stock || isOutOfStock}
+              disabled={quantity >= availableStock || isOutOfStock}
               className={`p-2 bg-white rounded-xl ${SOFT_SHADOW} hover:scale-105 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-transform duration-150`}
             >
               <Plus size={14} className="text-primary" />

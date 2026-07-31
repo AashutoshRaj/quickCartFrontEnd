@@ -1,4 +1,5 @@
 import { Search, Filter, RotateCcw, Download } from 'lucide-react';
+import { useProductCategories } from '../../../hooks/useProducts';
 
 interface InventorySearchProps {
   filters: {
@@ -11,7 +12,16 @@ interface InventorySearchProps {
   onFiltersChange: (filters: any) => void;
 }
 
+const stockStatusOptions = [
+  { value: '', label: 'All Status' },
+  { value: 'in-stock', label: 'In Stock' },
+  { value: 'low-stock', label: 'Low Stock' },
+  { value: 'out-of-stock', label: 'Out of Stock' },
+];
+
 export function InventorySearch({ filters, onFiltersChange }: InventorySearchProps) {
+  const { data: categoryData } = useProductCategories();
+  const categories = categoryData?.data.categories ?? [];
   const handleFilterChange = (field: string, value: string) => {
     onFiltersChange({ ...filters, [field]: value });
   };
@@ -55,7 +65,7 @@ export function InventorySearch({ filters, onFiltersChange }: InventorySearchPro
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Product Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -98,12 +108,9 @@ export function InventorySearch({ filters, onFiltersChange }: InventorySearchPro
             className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
             <option value="">All Categories</option>
-            <option value="electronics">Electronics</option>
-            <option value="footwear">Footwear</option>
-            <option value="accessories">Accessories</option>
-            <option value="grocery">Grocery</option>
-            <option value="fashion">Fashion</option>
-            <option value="home-decor">Home Decor</option>
+            {categories.map((category) => (
+              <option key={category.name} value={category.name}>{category.name}</option>
+            ))}
           </select>
         </div>
 
@@ -117,15 +124,16 @@ export function InventorySearch({ filters, onFiltersChange }: InventorySearchPro
             onChange={(e) => handleFilterChange('stockStatus', e.target.value)}
             className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
-            <option value="">All Status</option>
-            <option value="in-stock">In Stock</option>
-            <option value="low-stock">Low Stock</option>
-            <option value="out-of-stock">Out of Stock</option>
+            {stockStatusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Price Range */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Price Range
           </label>
@@ -145,7 +153,7 @@ export function InventorySearch({ filters, onFiltersChange }: InventorySearchPro
               className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="mt-4 pt-4 border-t border-gray-200">

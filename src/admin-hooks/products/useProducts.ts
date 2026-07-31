@@ -13,6 +13,12 @@ export const useProducts = (
   return useQuery({
     queryKey: ['products', page, limit, search, category, status, sortBy, sortOrder],
     queryFn: () => getProducts(page, limit, search, category, status, sortBy, sortOrder),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: 'always',
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
   });
 };
 

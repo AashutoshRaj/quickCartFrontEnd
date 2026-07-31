@@ -1,6 +1,10 @@
 import { Edit, Trash2, Eye, Package, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
 import { useState } from 'react';
-import { useProducts } from '../../../hooks/useProducts';
+import { useSelector } from 'react-redux';
+import { useProducts, useUpdateProduct } from '../../../hooks/useProducts';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import type { RootState } from '../../../types/index';
+import { formatCurrency } from '../../../utils/currency';
 
 interface ProductInventoryTableProps {
   filters: any;
@@ -26,11 +30,15 @@ const getStatusLabel = (stock: number): string => {
 
 export function ProductInventoryTable({ filters }: ProductInventoryTableProps) {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [stockDrafts, setStockDrafts] = useState<Record<string, string>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, error } = useProducts(currentPage, 10, filters?.productName || '', filters?.category || '', filters?.stockStatus || '');
+  const updateProduct = useUpdateProduct();
 
   const products = data?.data || [];
   const meta = data?.meta || { total: 0, page: 1, limit: 10, pages: 1 };
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || useSelector((state: RootState) => state.store.activeStore?.currency || 'USD');
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -44,6 +52,21 @@ export function ProductInventoryTable({ filters }: ProductInventoryTableProps) {
     setSelectedProducts(prev =>
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
+  };
+
+  const handleStockUpdate = async (productId: string, currentStock: number) => {
+    const rawValue = stockDrafts[productId];
+    if (rawValue === undefined || rawValue === '') return;
+
+    const stock = Number(rawValue);
+    if (!Number.isInteger(stock) || stock < 0 || stock === currentStock) return;
+
+    await updateProduct.mutateAsync({ id: productId, data: { stock } });
+    setStockDrafts((current) => {
+      const next = { ...current };
+      delete next[productId];
+      return next;
+    });
   };
 
   if (isLoading) {
@@ -170,12 +193,29 @@ export function ProductInventoryTable({ filters }: ProductInventoryTableProps) {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                    ${product.price?.toFixed(2) || '0.00'}
+                    {formatCurrency(Number(product.price || 0), currency)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">
-                      {product.stock || 0} <span className="text-gray-500 font-normal">{product.unit || 'units'}</span>
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        value={stockDrafts[productId] ?? String(product.stock || 0)}
+                        onChange={(event) => setStockDrafts((current) => ({ ...current, [productId]: event.target.value }))}
+                        className="w-20 px-2 py-1 text-sm border border-gray-200 rounded-lg focus:border-green-500 focus:outline-none"
+                        aria-label={`Stock quantity for ${product.name}`}
+                      />
+                      <span className="text-gray-500 text-xs">{product.unit || 'units'}</span>
+                      {stockDrafts[productId] !== undefined && Number(stockDrafts[productId]) !== Number(product.stock || 0) && (
+                        <button
+                          onClick={() => void handleStockUpdate(productId, Number(product.stock || 0))}
+                          disabled={updateProduct.isPending}
+                          className="text-xs text-green-700 hover:underline disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusStyles[status]}`}>

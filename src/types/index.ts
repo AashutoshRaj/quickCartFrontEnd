@@ -214,6 +214,7 @@ export interface Order {
   _id: string;
   status: string;
   total: number;
+  currency?: string;
   items?: CartItem[];
   [key: string]: unknown;
 }
@@ -232,6 +233,7 @@ export interface OrderDetails {
   _id: string;
   status: string;
   total: number;
+  currency?: string;
   items?: CartItem[];
   [key: string]: unknown;
 }

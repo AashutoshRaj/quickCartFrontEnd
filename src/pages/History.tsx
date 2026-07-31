@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import type { CartItem, Order } from '../types/index';
 import { PATHS, getOrderDetailsPath } from '../app/paths';
 import BottomNav from '../components/BottomNav.tsx';
+import { formatCurrency } from '../utils/currency.ts';
 import { useOrders, useDownloadInvoice } from '../queries/ordersQueries.ts';
 
 interface StatusColorConfig {
@@ -390,6 +391,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
   const tax = (order as any).tax || 0;
   const discount = (order as any).discount || 0;
   const total = order.total || subtotal + tax - discount;
+  const currency = order.currency || 'USD';
 
   const handleExpandClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
@@ -461,7 +463,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
               <div>
                 <p className="text-secondary font-inter text-[11px]">Total Amount</p>
                 <p className="text-primary font-poppins font-bold text-sm mt-0.5">
-                  ${total.toFixed(2)}
+                  {formatCurrency(total, currency)}
                 </p>
               </div>
               <motion.div
@@ -500,11 +502,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
                           {(item as any).name || (item as any).productName}
                         </p>
                         <p className="text-secondary font-inter text-xs">
-                          {item.quantity}x @ ${(item.price || (item as any).unitPrice || 0).toFixed(2)}
+                          {item.quantity}x @ {formatCurrency(Number(item.price || (item as any).unitPrice || 0), currency)}
                         </p>
                       </div>
                       <p className="text-on-surface font-inter font-semibold text-xs ml-2 flex-shrink-0">
-                        ${((item.price || (item as any).unitPrice || 0) * (item.quantity || 1)).toFixed(2)}
+                        {formatCurrency(Number((item.price || (item as any).unitPrice || 0) * (item.quantity || 1)), currency)}
                       </p>
                     </div>
                   ))}
@@ -516,14 +518,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-secondary font-inter">Subtotal</span>
                   <span className="text-on-surface font-inter font-medium">
-                    ${subtotal.toFixed(2)}
+                    {formatCurrency(subtotal, currency)}
                   </span>
                 </div>
                 {tax > 0 && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-secondary font-inter">Tax</span>
                     <span className="text-on-surface font-inter font-medium">
-                      ${tax.toFixed(2)}
+                      {formatCurrency(tax, currency)}
                     </span>
                   </div>
                 )}
@@ -531,13 +533,13 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-secondary font-inter">Discount</span>
                     <span className="text-green-600 font-inter font-medium">
-                      -${discount.toFixed(2)}
+                      -{formatCurrency(discount, currency)}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between text-sm pt-2 border-t border-outline/10 font-poppins font-bold">
                   <span className="text-on-surface">Grand Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
+                  <span className="text-primary">{formatCurrency(total, currency)}</span>
                 </div>
               </div>
 

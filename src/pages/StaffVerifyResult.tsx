@@ -10,9 +10,12 @@ import {
   ArrowLeft,
   ShieldCheck,
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { PATHS } from '../app/paths';
 import { verifyExitQr, approveExit, type VerifyResult } from '../api/staffVerificationApi';
+import { formatCurrency } from '../utils/currency.ts';
+import type { RootState } from '../types/index';
 
 type ScreenState = 'loading' | 'error' | VerifyResult['result'] | 'approved';
 
@@ -26,9 +29,11 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
 
+  const { activeStore } = useSelector((state: RootState) => state.store);
   const [state, setState] = useState<ScreenState>('loading');
   const [data, setData] = useState<VerifyResult | null>(null);
   const [approving, setApproving] = useState(false);
+  const [verifiedItems, setVerifiedItems] = useState<number[]>([]);
 
   useEffect(() => {
     if (!sessionId) {
@@ -56,7 +61,7 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
   }, [sessionId]);
 
   const handleApprove = async (): Promise<void> => {
-    if (!sessionId || approving) return;
+    if (!sessionId || approving || !data || !('items' in data) || verifiedItems.length !== data.items.length) return;
     setApproving(true);
     try {
       await approveExit(sessionId);
@@ -68,6 +73,12 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
     } finally {
       setApproving(false);
     }
+  };
+
+  const handleItemToggle = (index: number): void => {
+    setVerifiedItems((prev) =>
+      prev.includes(index) ? prev.filter((item) => item !== index) : [...prev, index]
+    );
   };
 
   const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -215,6 +226,8 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
 
   // state === 'success' — order verification detail
   const order = data as Extract<VerifyResult, { result: 'success' }>;
+  const currency = order.currency || activeStore?.currency || 'USD';
+  const allItemsVerified = order.items.length > 0 && verifiedItems.length === order.items.length;
 
   return (
     <Wrapper>
@@ -254,37 +267,57 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
         )}
         <div className="flex justify-between text-sm">
           <span className="text-secondary font-inter">Total Amount</span>
-          <span className="text-on-surface font-inter font-semibold">₹{order.totalAmount.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-secondary font-inter">Total Items</span>
-          <span className="text-on-surface font-inter font-semibold">{order.itemsCount}</span>
+          <span className="text-on-surface font-inter font-semibold">
+            {formatCurrency(order.totalAmount, currency)}
+          </span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto space-y-2 mb-4">
-        {order.items.map((item, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-outline/10 shadow-sm p-3 flex items-center gap-3">
-            {item.image ? (
-              <img src={item.image} alt={item.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
-            ) : (
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex-shrink-0" />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-on-surface font-inter font-semibold truncate">{item.name}</p>
-              {item.barcode && <p className="text-xs text-secondary font-inter">{item.barcode}</p>}
-              <p className="text-xs text-secondary font-inter">Qty: {item.quantity}</p>
-            </div>
-            <p className="text-sm text-on-surface font-inter font-semibold">₹{item.price.toFixed(2)}</p>
+      <div className="bg-white rounded-2xl border border-outline/10 shadow-sm p-4 space-y-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-on-surface font-poppins font-semibold text-base">Items Purchased</h2>
+            <p className="text-secondary font-inter text-xs">Verify each item before approving exit</p>
           </div>
-        ))}
+          <span className="text-sm font-inter text-secondary">
+            {verifiedItems.length}/{order.items.length} verified
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          {order.items.map((item, index) => {
+            const checked = verifiedItems.includes(index);
+            return (
+              <button
+                type="button"
+                key={`${item.name}-${index}`}
+                onClick={() => handleItemToggle(index)}
+                className={`w-full flex items-center justify-between gap-3 p-4 rounded-2xl border transition-colors duration-200 ${
+                  checked ? 'border-primary bg-primary/5' : 'border-outline/20 bg-white'
+                }`}
+              >
+                <div className="text-left">
+                  <p className="text-on-surface font-inter font-semibold text-sm truncate">{item.name}</p>
+                  <p className="text-secondary font-inter text-xs mt-1">
+                    Qty {item.quantity} • {formatCurrency(item.price, currency)}
+                  </p>
+                </div>
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full border transition-colors duration-200 ${checked ? 'border-primary bg-primary text-white' : 'border-outline/40 bg-white text-secondary'}`}>
+                  {checked ? '✓' : ''}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="space-y-3">
         <button
           onClick={handleApprove}
-          disabled={approving}
-          className="w-full bg-primary py-4 rounded-2xl text-white font-poppins font-bold shadow-xl shadow-primary/20 disabled:opacity-60 flex items-center justify-center gap-2"
+          disabled={approving || !allItemsVerified}
+          className={`w-full py-4 rounded-2xl text-white font-poppins font-bold shadow-xl shadow-primary/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+            allItemsVerified ? 'bg-primary' : 'bg-slate-400'
+          }`}
         >
           {approving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Approve Exit'}
         </button>

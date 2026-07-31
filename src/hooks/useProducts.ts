@@ -30,6 +30,21 @@ interface ImportResult {
   }>;
 }
 
+export interface ProductCategorySummary {
+  name: string;
+  productCount: number;
+  inventoryUnits: number;
+  activeProducts: number;
+  inactiveProducts: number;
+}
+
+interface CategoryListResponse {
+  status: string;
+  data: {
+    categories: ProductCategorySummary[];
+  };
+}
+
 const API_BASE = '/api/v1';
 
 const getAuthHeaders = () => {
@@ -46,17 +61,17 @@ export const useProducts = (
   limit: number = 20,
   search: string = '',
   category: string = '',
-  status: string = ''
+  stockStatus: string = ''
 ) => {
   return useQuery({
-    queryKey: ['products', page, limit, search, category, status],
+    queryKey: ['products', page, limit, search, category, stockStatus],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.set('page', page.toString());
       params.set('limit', limit.toString());
       if (search) params.set('search', search);
       if (category) params.set('category', category);
-      if (status) params.set('status', status);
+      if (stockStatus) params.set('stockStatus', stockStatus);
 
       const response = await fetch(`${API_BASE}/products?${params}`, {
         headers: getAuthHeaders(),
@@ -64,7 +79,31 @@ export const useProducts = (
       if (!response.ok) throw new Error('Failed to fetch products');
       return response.json() as Promise<ProductListResponse>;
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: 'always',
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
+  });
+};
+
+export const useProductCategories = () => {
+  return useQuery({
+    queryKey: ['product-categories'],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE}/products/categories`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error('Failed to fetch product categories');
+      return response.json() as Promise<CategoryListResponse>;
+    },
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: 'always',
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
   });
 };
 
@@ -110,6 +149,7 @@ export const useImportProducts = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product-categories'] });
       if (data.data.success > 0) {
         toast.success(`Successfully imported ${data.data.success} products!`);
       }
@@ -145,6 +185,7 @@ export const useCreateProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product-categories'] });
       toast.success('Product created successfully');
     },
     onError: (error: Error) => {
@@ -172,6 +213,7 @@ export const useUpdateProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product-categories'] });
       toast.success('Product updated successfully');
     },
     onError: (error: Error) => {
@@ -195,6 +237,7 @@ export const useDeleteProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product-categories'] });
       toast.success('Product deleted successfully');
     },
     onError: (error: Error) => {

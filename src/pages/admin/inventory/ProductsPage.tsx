@@ -1,17 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { InventoryOverview } from '../../../components/admin-app/components/InventoryOverview';
 import { InventorySearch } from '../../../components/admin-app/components/InventorySearch';
 import { ProductInventoryTable } from '../../../components/admin-app/components/ProductInventoryTable';
 import { ProductImportCenter } from '../../../components/admin-app/components/ProductImportCenter';
 
 export function ProductsPage() {
+  const [searchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get('category') || '';
   const [searchFilters, setSearchFilters] = useState({
     productName: '',
     barcode: '',
-    category: '',
+    category: categoryFromUrl,
     stockStatus: '',
     priceRange: { min: '', max: '' },
   });
+
+  useEffect(() => {
+    setSearchFilters((current) => ({ ...current, category: categoryFromUrl }));
+  }, [categoryFromUrl]);
 
   return (
     <div className="p-6 space-y-5">

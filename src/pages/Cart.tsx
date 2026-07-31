@@ -3,7 +3,9 @@ import { ChevronLeft, Trash2, Plus, Minus, CreditCard, ShoppingBag, AlertTriangl
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import type { CartItem as CartItemType } from '../types/index';
+import { useSelector } from 'react-redux';
+import type { CartItem as CartItemType, RootState } from '../types/index';
+import { formatCurrency } from '../utils/currency.ts';
 import BottomNav from '../components/BottomNav.tsx';
 import { PATHS } from '../app/paths';
 import { useCart } from '../hooks/cart/useCart.ts';
@@ -22,6 +24,7 @@ interface CartItemProps {
     productImage?: string;
     subtotal?: number;
   };
+  currency: string;
   onIncrease: () => void;
   onDecrease: () => void;
   onRemove: () => void;
@@ -58,6 +61,8 @@ const Cart: React.FC = (): React.ReactElement => {
   const clearCart = useClearCart();
   const createCheckoutSession = useCreateCheckoutSession();
 
+  const { activeStore } = useSelector((state: RootState) => state.store);
+  const currency = activeStore?.currency || 'USD';
   const cart = (data as unknown as CartData)?.data?.cart;
   const items = cart?.items || [];
 
@@ -164,6 +169,7 @@ const Cart: React.FC = (): React.ReactElement => {
             <CartItem
               key={item.productId}
               item={item}
+              currency={currency}
               onIncrease={() => increaseQuantity.mutate(item.productId)}
               onDecrease={() => decreaseQuantity.mutate(item.productId)}
               onRemove={() => removeItem.mutate(item.productId)}
@@ -177,15 +183,15 @@ const Cart: React.FC = (): React.ReactElement => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-secondary font-inter text-sm">Subtotal</span>
-                <span className="text-on-surface font-inter font-semibold text-sm">₹{Number(cart?.subtotal || 0).toFixed(2)}</span>
+                <span className="text-on-surface font-inter font-semibold text-sm">{formatCurrency(Number(cart?.subtotal || 0), currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-secondary font-inter text-sm">Tax (5%)</span>
-                <span className="text-on-surface font-inter font-semibold text-sm">₹{Number(cart?.tax || 0).toFixed(2)}</span>
+                <span className="text-on-surface font-inter font-semibold text-sm">{formatCurrency(Number(cart?.tax || 0), currency)}</span>
               </div>
               <div className="flex justify-between mt-5 pt-5 border-t border-outline/10">
                 <span className="text-on-surface font-poppins font-bold text-lg">Total</span>
-                <span className="text-primary font-poppins font-bold text-lg">₹{Number(cart?.grandTotal || 0).toFixed(2)}</span>
+                <span className="text-primary font-poppins font-bold text-lg">{formatCurrency(Number(cart?.grandTotal || 0), currency)}</span>
               </div>
             </div>
           </div>
@@ -217,7 +223,7 @@ const Cart: React.FC = (): React.ReactElement => {
  * @param {CartItemProps} props - Cart item properties
  * @returns {React.ReactElement} Cart item element
  */
-const CartItem: React.FC<CartItemProps> = ({ item, onIncrease, onDecrease, onRemove }): React.ReactElement => {
+const CartItem: React.FC<CartItemProps> = ({ item, currency, onIncrease, onDecrease, onRemove }): React.ReactElement => {
   const handleIncrease = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();
     onIncrease();
@@ -252,8 +258,8 @@ const CartItem: React.FC<CartItemProps> = ({ item, onIncrease, onDecrease, onRem
       <div className="flex-1 ml-5 min-w-0">
         <h4 className="text-on-surface font-poppins font-semibold text-sm truncate">{item.productName}</h4>
         <p className="text-secondary font-inter text-xs mt-1">Qty {item.quantity}</p>
-        <p className="text-primary font-poppins font-bold mt-2 text-lg">₹{Number(item.price || 0).toFixed(2)}</p>
-        <p className="text-secondary font-inter text-xs mt-1">Subtotal ₹{Number(item.subtotal || 0).toFixed(2)}</p>
+        <p className="text-primary font-poppins font-bold mt-2 text-lg">{formatCurrency(Number(item.price || 0), currency)}</p>
+        <p className="text-secondary font-inter text-xs mt-1">Subtotal {formatCurrency(Number(item.subtotal || 0), currency)}</p>
       </div>
       <div className="flex flex-col items-end gap-3 flex-shrink-0">
         <button onClick={handleRemove} className="p-2 hover:bg-red-50 rounded-xl transition-colors duration-200">

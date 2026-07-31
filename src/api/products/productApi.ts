@@ -34,3 +34,8 @@ export const deleteProduct = async (id: string) => {
   const response = await api.delete(`/products/${id}`);
   return response.data;
 };
+
+export const getProductSummary = async () => {
+  const response = await api.get('/products/summary');
+  return response.data;
+};

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { XCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { PATHS } from '../app/paths';
+import apiClient from '../api/axios.ts';
 
 /**
  * Payment Cancel Page Component
@@ -11,6 +12,16 @@ import { PATHS } from '../app/paths';
  * @returns {React.ReactElement} Payment cancellation page
  */
 const PaymentCancel: React.FC = (): React.ReactElement => {
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get('session_id');
+
+  useEffect(() => {
+    if (!sessionId) return;
+    void apiClient.post(`/checkout/cancel/${encodeURIComponent(sessionId)}`).catch(() => {
+      // The cart remains available even if cancellation confirmation fails.
+    });
+  }, [sessionId]);
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="w-full max-w-md rounded-[2rem] border border-red-200 bg-white p-8 text-center shadow-sm">

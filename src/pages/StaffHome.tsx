@@ -6,6 +6,7 @@ import { QrCode, Clock, CheckCircle2, User, Loader2 } from 'lucide-react';
 import { PATHS } from '../app/paths';
 import { getStaffDashboardStats, type StaffDashboardStats } from '../api/staffVerificationApi';
 import type { RootState } from '../types/index';
+import { formatCurrency } from '../utils/currency.ts';
 
 /**
  * Security Dashboard (Staff Home)
@@ -27,8 +28,9 @@ const StaffHome: React.FC = (): React.ReactElement => {
 
   if (!staffUser) return <></>;
 
+  const currency = useSelector((state: RootState) => state.store.activeStore?.currency || 'USD');
+
   return (
-    <div className="h-dvh bg-background flex flex-col px-6 py-8 overflow-auto">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -90,7 +92,7 @@ const StaffHome: React.FC = (): React.ReactElement => {
                     </p>
                   </div>
                   <p className="text-sm text-on-surface font-inter font-semibold">
-                    ₹{activity.totalAmount.toFixed(2)}
+                    {formatCurrency(activity.totalAmount, currency)}
                   </p>
                 </div>
               ))
@@ -100,7 +102,7 @@ const StaffHome: React.FC = (): React.ReactElement => {
           </div>
         </div>
       </motion.div>
-    </div>
+    
   );
 };
 

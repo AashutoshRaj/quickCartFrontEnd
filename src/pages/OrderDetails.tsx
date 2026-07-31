@@ -10,7 +10,9 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import type { OrderDetailsParams, CartItem, OrderDetails } from '../types/index';
+import { useSelector } from 'react-redux';
+import type { OrderDetailsParams, CartItem, OrderDetails, RootState } from '../types/index';
+import { formatCurrency } from '../utils/currency.ts';
 import BottomNav from '../components/BottomNav.tsx';
 import { useOrderDetails, useDownloadInvoice } from '../queries/ordersQueries.ts';
 
@@ -46,7 +48,9 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
   const navigate = useNavigate();
   const [copiedId, setCopiedId] = useState<boolean>(false);
 
+  const { activeStore } = useSelector((state: RootState) => state.store);
   const { data: order, isLoading, isError, error } = useOrderDetails(orderId || '');
+  const currency = order?.currency || activeStore?.currency || 'USD';
   const downloadInvoice = useDownloadInvoice();
 
   const handleCopyOrderId = (e: React.MouseEvent<HTMLButtonElement>): void => {
@@ -285,12 +289,12 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
                     {(item as any).name || (item as any).productName}
                   </p>
                   <p className="text-secondary font-inter text-xs mt-1">
-                    Quantity: {item.quantity}x @ ${(item.price || (item as any).unitPrice || 0).toFixed(2)}
+                    Quantity: {item.quantity}x @ {formatCurrency(Number(item.price || (item as any).unitPrice || 0), currency)}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="text-on-surface font-poppins font-bold text-sm">
-                    ${((item.price || (item as any).unitPrice || 0) * (item.quantity || 1)).toFixed(2)}
+                    {formatCurrency(Number((item.price || (item as any).unitPrice || 0) * (item.quantity || 1)), currency)}
                   </p>
                 </div>
               </div>
@@ -308,14 +312,14 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
           <div className="flex items-center justify-between text-sm">
             <span className="text-secondary font-inter">Subtotal</span>
             <span className="text-on-surface font-inter font-medium">
-              ${subtotal.toFixed(2)}
+              {formatCurrency(subtotal, currency)}
             </span>
           </div>
           {tax > 0 && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-secondary font-inter">Tax</span>
               <span className="text-on-surface font-inter font-medium">
-                ${tax.toFixed(2)}
+                {formatCurrency(tax, currency)}
               </span>
             </div>
           )}
@@ -323,13 +327,13 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
             <div className="flex items-center justify-between text-sm">
               <span className="text-secondary font-inter">Discount</span>
               <span className="text-green-600 font-inter font-medium">
-                -${discount.toFixed(2)}
+                -{formatCurrency(discount, currency)}
               </span>
             </div>
           )}
           <div className="flex items-center justify-between text-sm pt-3 border-t border-outline/10 font-poppins font-bold">
             <span className="text-on-surface">Grand Total</span>
-            <span className="text-primary text-lg">${total.toFixed(2)}</span>
+            <span className="text-primary text-lg">{formatCurrency(total, currency)}</span>
           </div>
         </motion.div>
 

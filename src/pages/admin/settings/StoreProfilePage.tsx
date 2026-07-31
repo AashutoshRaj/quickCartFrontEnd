@@ -3,14 +3,17 @@
  * Displays store information, QR code, and settings
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, Edit2, Save, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { StoreQRCode } from '../../../components/StoreQRCode';
+import { useStoreProfile, useInvalidateStoreProfile } from '../../../hooks/useStoreProfile';
+import { updateStoreProfile, regenerateStoreQRCode } from '../../../api/storeApi';
 
 interface StoreData {
-  _id: string;
+  _id?: string;
   name: string;
   address: string;
   phoneNumber: string;
@@ -25,21 +28,40 @@ export function StoreProfilePage(): React.ReactElement {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  // Mock store data - in real app, fetch from backend/context
-  const [store, setStore] = useState<StoreData>({
-    _id: '507f1f77bcf86cd799439011',
-    name: 'QuickCart Flagship Store',
-    address: '1420 Main Street, San Francisco, CA 94102',
-    phoneNumber: '+1 555-0100',
+  const { data: storeProfile, isLoading: profileLoading } = useStoreProfile();
+  const invalidateStoreProfile = useInvalidateStoreProfile();
+
+  const [formData, setFormData] = useState<StoreData>({
+    _id: undefined,
+    name: '',
+    address: '',
+    phoneNumber: '',
     currency: 'USD',
-    timezone: 'America/Los_Angeles',
+    timezone: 'UTC',
     status: 'active',
     logo: null,
     qrCode: null,
   });
 
-  const [formData, setFormData] = useState<StoreData>(store);
+  useEffect(() => {
+    if (storeProfile) {
+      setFormData({
+        _id: storeProfile._id,
+        name: storeProfile.name || '',
+        address: storeProfile.address || '',
+        phoneNumber: storeProfile.phoneNumber || '',
+        currency: storeProfile.currency || 'USD',
+        timezone: storeProfile.timezone || 'UTC',
+        status: storeProfile.status || 'active',
+        logo: storeProfile.logo || null,
+        qrCode: storeProfile.qrCode || null,
+      });
+      setLogoPreview(storeProfile.logo || null);
+      setHasChanges(false);
+    }
+  }, [storeProfile]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     const { name, value } = e.target;
@@ -47,38 +69,97 @@ export function StoreProfilePage(): React.ReactElement {
       ...prev,
       [name]: value,
     }));
+    setHasChanges(true);
   };
+
+  const saveMutation = useMutation({
+    mutationFn: (payload: Partial<StoreData>) => updateStoreProfile(payload),
+    onSuccess: (result) => {
+      const savedStore = result.store;
+      setFormData({
+        _id: savedStore._id,
+        name: savedStore.name || '',
+        address: savedStore.address || '',
+        phoneNumber: savedStore.phoneNumber || '',
+        currency: savedStore.currency || 'USD',
+        timezone: savedStore.timezone || 'UTC',
+        status: savedStore.status || 'active',
+        logo: savedStore.logo || null,
+        qrCode: savedStore.qrCode || null,
+      });
+      setIsEditing(false);
+      setHasChanges(false);
+      invalidateStoreProfile();
+      toast.success('Store profile updated');
+    },
+    onError: (error) => {
+      toast.error('Failed to update store profile');
+      console.error('Save error:', error);
+    },
+  });
+
+  const qrMutation = useMutation({
+    mutationFn: () => regenerateStoreQRCode(),
+    onSuccess: (result) => {
+      const updatedStore = result.store;
+      setFormData(prev => ({
+        ...prev,
+        qrCode: updatedStore.qrCode ?? prev.qrCode,
+      }));
+      invalidateStoreProfile();
+      toast.success('QR Code regenerated');
+    },
+    onError: (error) => {
+      toast.error('Failed to regenerate QR Code');
+      console.error('Regenerate error:', error);
+    },
+  });
 
   const handleSave = async (): Promise<void> => {
     setIsSaving(true);
     try {
-      // TODO: Call backend API to save store profile
-      // await updateStore(formData);
-      setStore(formData);
+      await saveMutation.mutateAsync({
+        name: formData.name,
+        address: formData.address,
+        phoneNumber: formData.phoneNumber,
+        currency: formData.currency,
+        timezone: formData.timezone,
+        status: formData.status,
+        logo: formData.logo,
+        qrCode: formData.qrCode,
+      });
       setIsEditing(false);
-      toast.success('Store profile updated');
     } catch (error) {
-      toast.error('Failed to update store profile');
-      console.error('Save error:', error);
+      // Error handling is handled by mutation callbacks
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleCancel = (): void => {
-    setFormData(store);
+    if (storeProfile) {
+      setFormData({
+        _id: storeProfile._id,
+        name: storeProfile.name || '',
+        address: storeProfile.address || '',
+        phoneNumber: storeProfile.phoneNumber || '',
+        currency: storeProfile.currency || 'USD',
+        timezone: storeProfile.timezone || 'UTC',
+        status: storeProfile.status || 'active',
+        logo: storeProfile.logo || null,
+        qrCode: storeProfile.qrCode || null,
+      });
+      setLogoPreview(storeProfile.logo || null);
+      setHasChanges(false);
+    }
     setIsEditing(false);
   };
 
   const handleRegenerate = async (): Promise<void> => {
     try {
-      // TODO: Call backend API to regenerate QR code
-      // const response = await regenerateQRCode(store._id);
-      // setStore(prev => ({ ...prev, qrCode: response.qrCode }));
-      toast.success('QR Code regenerated');
+      await qrMutation.mutateAsync();
     } catch (error) {
-      toast.error('Failed to regenerate QR Code');
-      console.error('Regenerate error:', error);
+      // Error handling is handled by mutation callbacks
     }
   };
 
@@ -111,7 +192,7 @@ export function StoreProfilePage(): React.ReactElement {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={isSaving}
+                  disabled={isSaving || !hasChanges}
                   className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition flex items-center gap-2"
                 >
                   <Save size={18} />
@@ -251,9 +332,9 @@ export function StoreProfilePage(): React.ReactElement {
               <h2 className="text-lg font-semibold text-gray-900 mb-6">Store QR Code</h2>
 
               <StoreQRCode
-                storeId={store._id}
-                storeName={store.name}
-                qrCodeDataURL={store.qrCode ?? undefined}
+                storeId={formData._id || 'unknown-store'}
+                storeName={formData.name || 'QuickCart Store'}
+                qrCodeDataURL={formData.qrCode ?? undefined}
                 onRegenerate={handleRegenerate}
               />
             </div>

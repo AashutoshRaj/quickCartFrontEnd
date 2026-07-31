@@ -42,6 +42,7 @@ export type VerifyResult =
       paymentStatus: string;
       paidAt: string | null;
       totalAmount: number;
+      currency: string;
       itemsCount: number;
       items: VerifyItem[];
     };
