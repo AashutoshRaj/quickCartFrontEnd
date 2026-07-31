@@ -4,6 +4,8 @@ import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell
 } from 'recharts';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { formatCurrency } from '../../../utils/currency';
 
 const monthlyRevenue = [
   { month: 'Jan', revenue: 142000, orders: 5820 },
@@ -24,14 +26,14 @@ const categoryPerf = [
 ];
 
 const topProducts = [
-  { rank: 1, name: 'Organic Whole Milk 1L', units: 12840, revenue: '$32,100', growth: '+12%' },
-  { rank: 2, name: 'Sourdough Bread Loaf', units: 10920, revenue: '$27,300', growth: '+8%' },
-  { rank: 3, name: 'Free-Range Eggs 12pk', units: 9840, revenue: '$29,520', growth: '+15%' },
-  { rank: 4, name: 'Avocado (each)', units: 18200, revenue: '$27,300', growth: '+22%' },
-  { rank: 5, name: 'Atlantic Salmon Fillet', units: 4820, revenue: '$48,200', growth: '+9%' },
-  { rank: 6, name: 'Greek Yogurt 500g', units: 8420, revenue: '$21,050', growth: '+11%' },
-  { rank: 7, name: 'Cherry Tomatoes 250g', units: 9100, revenue: '$18,200', growth: '-3%' },
-  { rank: 8, name: 'Olive Oil 750ml', units: 3840, revenue: '$24,960', growth: '+7%' },
+  { rank: 1, name: 'Organic Whole Milk 1L', units: 12840, revenue: 32100, growth: '+12%' },
+  { rank: 2, name: 'Sourdough Bread Loaf', units: 10920, revenue: 27300, growth: '+8%' },
+  { rank: 3, name: 'Free-Range Eggs 12pk', units: 9840, revenue: 29520, growth: '+15%' },
+  { rank: 4, name: 'Avocado (each)', units: 18200, revenue: 27300, growth: '+22%' },
+  { rank: 5, name: 'Atlantic Salmon Fillet', units: 4820, revenue: 48200, growth: '+9%' },
+  { rank: 6, name: 'Greek Yogurt 500g', units: 8420, revenue: 21050, growth: '+11%' },
+  { rank: 7, name: 'Cherry Tomatoes 250g', units: 9100, revenue: 18200, growth: '-3%' },
+  { rank: 8, name: 'Olive Oil 750ml', units: 3840, revenue: 24960, growth: '+7%' },
 ];
 
 const retentionData = [
@@ -47,6 +49,9 @@ const CATEGORY_COLORS = ['#22c55e', '#3b82f6', '#f97316', '#a855f7', '#06b6d4', 
 
 export function AnalyticsPage() {
   const [period, setPeriod] = useState('6m');
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
+  const formatShortRevenue = (value: number) => `${formatCurrency(value / 1000, currency, undefined, 0).replace(/\.00$/, '')}k`;
 
   return (
     <div className="p-6 space-y-5">
@@ -72,13 +77,15 @@ export function AnalyticsPage() {
       {/* KPI row */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: 'Total Revenue (6m)', value: '$982,000', change: '+14.2%', up: true },
+          { label: 'Total Revenue (6m)', value: 982000, currency: true, change: '+14.2%', up: true },
           { label: 'Total Orders (6m)', value: '39,780', change: '+11.8%', up: true },
-          { label: 'Avg Order Value', value: '$24.69', change: '+2.1%', up: true },
+          { label: 'Avg Order Value', value: 24.69, currency: true, change: '+2.1%', up: true },
           { label: 'Customer Retention', value: '74.8%', change: '+3.2%', up: true },
         ].map(k => (
           <div key={k.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-            <p className="text-2xl text-gray-900" style={{ fontWeight: 700 }}>{k.value}</p>
+            <p className="text-2xl text-gray-900" style={{ fontWeight: 700 }}>
+              {k.currency ? formatCurrency(k.value as number, currency) : k.value}
+            </p>
             <p className="text-xs text-gray-500 mt-0.5">{k.label}</p>
             <p className={`text-xs mt-1 ${k.up ? 'text-green-600' : 'text-red-500'}`} style={{ fontWeight: 500 }}>{k.change} vs prev period</p>
           </div>
@@ -98,9 +105,9 @@ export function AnalyticsPage() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => formatShortRevenue(Number(v))} />
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-            <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} formatter={(v: number, name: string) => [name === 'revenue' ? `$${v.toLocaleString()}` : v.toLocaleString(), name === 'revenue' ? 'Revenue' : 'Orders']} />
+            <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} formatter={(v: number, name: string) => [name === 'revenue' ? formatCurrency(Number(v), currency) : v.toLocaleString(), name === 'revenue' ? 'Revenue' : 'Orders']} />
             <Legend />
             <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="#22c55e" strokeWidth={2} fill="url(#revA)" name="revenue" />
             <Line yAxisId="right" type="monotone" dataKey="orders" stroke="#3b82f6" strokeWidth={2} dot={false} name="orders" />
@@ -115,9 +122,9 @@ export function AnalyticsPage() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={categoryPerf} layout="vertical" barSize={12}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+              <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => formatShortRevenue(Number(v))} />
               <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={110} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']} />
+              <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} formatter={(v: number) => [formatCurrency(Number(v), currency), 'Revenue']} />
               <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
                 {categoryPerf.map((_, i) => <Cell key={i} fill={CATEGORY_COLORS[i]} />)}
               </Bar>
@@ -165,7 +172,7 @@ export function AnalyticsPage() {
                 </td>
                 <td className="px-5 py-3.5 text-sm text-gray-800" style={{ fontWeight: 500 }}>{p.name}</td>
                 <td className="px-5 py-3.5 text-sm text-gray-600">{p.units.toLocaleString()}</td>
-                <td className="px-5 py-3.5 text-sm text-gray-900" style={{ fontWeight: 600 }}>{p.revenue}</td>
+                <td className="px-5 py-3.5 text-sm text-gray-900" style={{ fontWeight: 600 }}>{formatCurrency(p.revenue, currency)}</td>
                 <td className="px-5 py-3.5">
                   <span className={`text-xs ${p.growth.startsWith('+') ? 'text-green-600' : 'text-red-500'}`} style={{ fontWeight: 500 }}>{p.growth}</span>
                 </td>

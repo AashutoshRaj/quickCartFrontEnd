@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { Search, Filter, Download, Eye, X, Star, ShoppingBag, TrendingUp } from 'lucide-react';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { formatCurrency } from '../../../utils/currency';
 
 const customers = [
-  { id: 'C-1001', name: 'Maria Santos', phone: '+1 555-0142', email: 'maria.santos@email.com', orders: 84, ltv: '$4,210', lastPurchase: 'Jun 13, 2026', loyalty: 2840, tier: 'Gold', joined: 'Jan 2024' },
-  { id: 'C-1002', name: 'James Okafor', phone: '+234 801-0023', email: 'james.o@email.com', orders: 31, ltv: '$1,480', lastPurchase: 'Jun 13, 2026', loyalty: 980, tier: 'Silver', joined: 'Mar 2024' },
-  { id: 'C-1003', name: 'Priya Nair', phone: '+91 98765-43210', email: 'priya.nair@email.com', orders: 127, ltv: '$8,920', lastPurchase: 'Jun 13, 2026', loyalty: 5430, tier: 'Platinum', joined: 'Nov 2023' },
-  { id: 'C-1004', name: 'Carlos Mendez', phone: '+52 55 1234-5678', email: 'carlos.m@email.com', orders: 56, ltv: '$2,790', lastPurchase: 'Jun 12, 2026', loyalty: 1780, tier: 'Silver', joined: 'Feb 2024' },
-  { id: 'C-1005', name: 'Anna Kowalski', phone: '+48 600-123-456', email: 'anna.k@email.com', orders: 19, ltv: '$760', lastPurchase: 'Jun 13, 2026', loyalty: 430, tier: 'Bronze', joined: 'May 2024' },
-  { id: 'C-1006', name: 'David Chen', phone: '+1 555-0198', email: 'david.chen@email.com', orders: 203, ltv: '$14,200', lastPurchase: 'Jun 13, 2026', loyalty: 8920, tier: 'Platinum', joined: 'Aug 2023' },
-  { id: 'C-1007', name: 'Lisa Thompson', phone: '+1 555-0203', email: 'lisa.t@email.com', orders: 45, ltv: '$2,130', lastPurchase: 'Jun 10, 2026', loyalty: 1290, tier: 'Silver', joined: 'Apr 2024' },
-  { id: 'C-1008', name: 'Omar Hassan', phone: '+20 100-123-4567', email: 'omar.h@email.com', orders: 72, ltv: '$3,840', lastPurchase: 'Jun 13, 2026', loyalty: 2140, tier: 'Gold', joined: 'Dec 2023' },
-  { id: 'C-1009', name: 'Sofia Rodriguez', phone: '+34 612-345-678', email: 'sofia.r@email.com', orders: 38, ltv: '$1,920', lastPurchase: 'Jun 11, 2026', loyalty: 1040, tier: 'Silver', joined: 'Jan 2024' },
-  { id: 'C-1010', name: 'Yuki Tanaka', phone: '+81 90-1234-5678', email: 'yuki.t@email.com', orders: 156, ltv: '$9,780', lastPurchase: 'Jun 13, 2026', loyalty: 6200, tier: 'Platinum', joined: 'Sep 2023' },
+  { id: 'C-1001', name: 'Maria Santos', phone: '+1 555-0142', email: 'maria.santos@email.com', orders: 84, ltv: 4210, lastPurchase: 'Jun 13, 2026', loyalty: 2840, tier: 'Gold', joined: 'Jan 2024' },
+  { id: 'C-1002', name: 'James Okafor', phone: '+234 801-0023', email: 'james.o@email.com', orders: 31, ltv: 1480, lastPurchase: 'Jun 13, 2026', loyalty: 980, tier: 'Silver', joined: 'Mar 2024' },
+  { id: 'C-1003', name: 'Priya Nair', phone: '+91 98765-43210', email: 'priya.nair@email.com', orders: 127, ltv: 8920, lastPurchase: 'Jun 13, 2026', loyalty: 5430, tier: 'Platinum', joined: 'Nov 2023' },
+  { id: 'C-1004', name: 'Carlos Mendez', phone: '+52 55 1234-5678', email: 'carlos.m@email.com', orders: 56, ltv: 2790, lastPurchase: 'Jun 12, 2026', loyalty: 1780, tier: 'Silver', joined: 'Feb 2024' },
+  { id: 'C-1005', name: 'Anna Kowalski', phone: '+48 600-123-456', email: 'anna.k@email.com', orders: 19, ltv: 760, lastPurchase: 'Jun 13, 2026', loyalty: 430, tier: 'Bronze', joined: 'May 2024' },
+  { id: 'C-1006', name: 'David Chen', phone: '+1 555-0198', email: 'david.chen@email.com', orders: 203, ltv: 14200, lastPurchase: 'Jun 13, 2026', loyalty: 8920, tier: 'Platinum', joined: 'Aug 2023' },
+  { id: 'C-1007', name: 'Lisa Thompson', phone: '+1 555-0203', email: 'lisa.t@email.com', orders: 45, ltv: 2130, lastPurchase: 'Jun 10, 2026', loyalty: 1290, tier: 'Silver', joined: 'Apr 2024' },
+  { id: 'C-1008', name: 'Omar Hassan', phone: '+20 100-123-4567', email: 'omar.h@email.com', orders: 72, ltv: 3840, lastPurchase: 'Jun 13, 2026', loyalty: 2140, tier: 'Gold', joined: 'Dec 2023' },
+  { id: 'C-1009', name: 'Sofia Rodriguez', phone: '+34 612-345-678', email: 'sofia.r@email.com', orders: 38, ltv: 1920, lastPurchase: 'Jun 11, 2026', loyalty: 1040, tier: 'Silver', joined: 'Jan 2024' },
+  { id: 'C-1010', name: 'Yuki Tanaka', phone: '+81 90-1234-5678', email: 'yuki.t@email.com', orders: 156, ltv: 9780, lastPurchase: 'Jun 13, 2026', loyalty: 6200, tier: 'Platinum', joined: 'Sep 2023' },
 ];
 
 const tierColors: Record<string, string> = {
@@ -22,11 +24,11 @@ const tierColors: Record<string, string> = {
 };
 
 const purchaseHistory = [
-  { id: 'ORD-8821', date: 'Jun 13, 2026', amount: '$142.30', items: 8, status: 'Completed' },
-  { id: 'ORD-8701', date: 'Jun 10, 2026', amount: '$98.40', items: 6, status: 'Completed' },
-  { id: 'ORD-8589', date: 'Jun 7, 2026', amount: '$210.80', items: 12, status: 'Completed' },
-  { id: 'ORD-8440', date: 'Jun 3, 2026', amount: '$67.50', items: 4, status: 'Completed' },
-  { id: 'ORD-8301', date: 'May 29, 2026', amount: '$185.20', items: 10, status: 'Completed' },
+  { id: 'ORD-8821', date: 'Jun 13, 2026', amount: 142.3, items: 8, status: 'Completed' },
+  { id: 'ORD-8701', date: 'Jun 10, 2026', amount: 98.4, items: 6, status: 'Completed' },
+  { id: 'ORD-8589', date: 'Jun 7, 2026', amount: 210.8, items: 12, status: 'Completed' },
+  { id: 'ORD-8440', date: 'Jun 3, 2026', amount: 67.5, items: 4, status: 'Completed' },
+  { id: 'ORD-8301', date: 'May 29, 2026', amount: 185.2, items: 10, status: 'Completed' },
 ];
 
 const favoriteProducts = ['Organic Whole Milk 1L', 'Avocado (each)', 'Sourdough Bread Loaf', 'Greek Yogurt 500g', 'Free-Range Eggs 12pk'];
@@ -34,12 +36,21 @@ const favoriteProducts = ['Organic Whole Milk 1L', 'Avocado (each)', 'Sourdough 
 export function CustomersPage() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<typeof customers[0] | null>(null);
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
 
   const filtered = customers.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.email.toLowerCase().includes(search.toLowerCase()) ||
     c.phone.includes(search)
   );
+
+  const summaryCards = [
+    { label: 'Total Customers', value: '3,921', icon: '👥' },
+    { label: 'Platinum Members', value: '312', icon: '💎' },
+    { label: 'Active This Month', value: '2,840', icon: '📈' },
+    { label: 'Avg Lifetime Value', value: formatCurrency(4920, currency), icon: '💰' },
+  ];
 
   return (
     <div className="p-6 space-y-5">
@@ -57,12 +68,7 @@ export function CustomersPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: 'Total Customers', value: '3,921', icon: '👥' },
-          { label: 'Platinum Members', value: '312', icon: '💎' },
-          { label: 'Active This Month', value: '2,840', icon: '📈' },
-          { label: 'Avg Lifetime Value', value: '$4,920', icon: '💰' },
-        ].map(s => (
+        {summaryCards.map(s => (
           <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
             <p className="text-2xl mb-1">{s.icon}</p>
             <p className="text-xl text-gray-900" style={{ fontWeight: 700 }}>{s.value}</p>
@@ -114,7 +120,7 @@ export function CustomersPage() {
                 <td className="px-4 py-3.5 text-sm text-gray-600">{customer.phone}</td>
                 <td className="px-4 py-3.5 text-sm text-gray-600">{customer.email}</td>
                 <td className="px-4 py-3.5 text-sm text-gray-900" style={{ fontWeight: 500 }}>{customer.orders}</td>
-                <td className="px-4 py-3.5 text-sm text-gray-900" style={{ fontWeight: 600 }}>{customer.ltv}</td>
+                <td className="px-4 py-3.5 text-sm text-gray-900" style={{ fontWeight: 600 }}>{formatCurrency(customer.ltv, currency)}</td>
                 <td className="px-4 py-3.5">
                   <div className="flex items-center gap-1.5">
                     <Star className="w-3 h-3 text-yellow-500" />
@@ -167,7 +173,7 @@ export function CustomersPage() {
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { label: 'Orders', value: selected.orders, icon: ShoppingBag },
-                  { label: 'Lifetime Value', value: selected.ltv, icon: TrendingUp },
+                  { label: 'Lifetime Value', value: formatCurrency(selected.ltv, currency), icon: TrendingUp },
                   { label: 'Loyalty Points', value: selected.loyalty.toLocaleString(), icon: Star },
                 ].map(s => (
                   <div key={s.label} className="bg-gray-50 rounded-lg p-3 text-center">
@@ -198,7 +204,7 @@ export function CustomersPage() {
                         <p className="text-xs text-gray-400">{order.date} · {order.items} items</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-900" style={{ fontWeight: 600 }}>{order.amount}</p>
+                        <p className="text-sm text-gray-900" style={{ fontWeight: 600 }}>{formatCurrency(order.amount, currency)}</p>
                         <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">{order.status}</span>
                       </div>
                     </div>

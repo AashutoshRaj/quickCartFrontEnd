@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { Search, Filter, Download, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { formatCurrency } from '../../../utils/currency';
 
 const allOrders = [
-  { id: 'ORD-8821', customer: 'Maria Santos', phone: '+1 555-0142', items: 8, amount: '$142.30', payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:42' },
-  { id: 'ORD-8820', customer: 'James Okafor', phone: '+234 801-0023', items: 3, amount: '$38.75', payment: 'Paid', status: 'Processing', date: 'Jun 13, 09:40' },
-  { id: 'ORD-8819', customer: 'Priya Nair', phone: '+91 98765-43210', items: 12, amount: '$215.60', payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:38' },
-  { id: 'ORD-8818', customer: 'Carlos Mendez', phone: '+52 55 1234-5678', items: 5, amount: '$89.20', payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:35' },
-  { id: 'ORD-8817', customer: 'Anna Kowalski', phone: '+48 600-123-456', items: 2, amount: '$24.99', payment: 'Paid', status: 'Pending', date: 'Jun 13, 09:31' },
-  { id: 'ORD-8816', customer: 'David Chen', phone: '+1 555-0198', items: 9, amount: '$178.40', payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:28' },
-  { id: 'ORD-8815', customer: 'Lisa Thompson', phone: '+1 555-0203', items: 6, amount: '$96.15', payment: 'Paid', status: 'Cancelled', date: 'Jun 13, 09:22' },
-  { id: 'ORD-8814', customer: 'Omar Hassan', phone: '+20 100-123-4567', items: 14, amount: '$302.80', payment: 'Refunded', status: 'Refunded', date: 'Jun 13, 09:15' },
-  { id: 'ORD-8813', customer: 'Sofia Rodriguez', phone: '+34 612-345-678', items: 7, amount: '$134.90', payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:10' },
-  { id: 'ORD-8812', customer: 'Marcus Johnson', phone: '+1 555-0167', items: 4, amount: '$67.50', payment: 'Paid', status: 'Processing', date: 'Jun 13, 09:05' },
-  { id: 'ORD-8811', customer: 'Yuki Tanaka', phone: '+81 90-1234-5678', items: 11, amount: '$198.20', payment: 'Paid', status: 'Completed', date: 'Jun 13, 08:58' },
-  { id: 'ORD-8810', customer: 'Aisha Bello', phone: '+234 802-1234', items: 3, amount: '$41.60', payment: 'Paid', status: 'Pending', date: 'Jun 13, 08:51' },
+  { id: 'ORD-8821', customer: 'Maria Santos', phone: '+1 555-0142', items: 8, amount: 142.3, payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:42' },
+  { id: 'ORD-8820', customer: 'James Okafor', phone: '+234 801-0023', items: 3, amount: 38.75, payment: 'Paid', status: 'Processing', date: 'Jun 13, 09:40' },
+  { id: 'ORD-8819', customer: 'Priya Nair', phone: '+91 98765-43210', items: 12, amount: 215.6, payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:38' },
+  { id: 'ORD-8818', customer: 'Carlos Mendez', phone: '+52 55 1234-5678', items: 5, amount: 89.2, payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:35' },
+  { id: 'ORD-8817', customer: 'Anna Kowalski', phone: '+48 600-123-456', items: 2, amount: 24.99, payment: 'Paid', status: 'Pending', date: 'Jun 13, 09:31' },
+  { id: 'ORD-8816', customer: 'David Chen', phone: '+1 555-0198', items: 9, amount: 178.4, payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:28' },
+  { id: 'ORD-8815', customer: 'Lisa Thompson', phone: '+1 555-0203', items: 6, amount: 96.15, payment: 'Paid', status: 'Cancelled', date: 'Jun 13, 09:22' },
+  { id: 'ORD-8814', customer: 'Omar Hassan', phone: '+20 100-123-4567', items: 14, amount: 302.8, payment: 'Refunded', status: 'Refunded', date: 'Jun 13, 09:15' },
+  { id: 'ORD-8813', customer: 'Sofia Rodriguez', phone: '+34 612-345-678', items: 7, amount: 134.9, payment: 'Paid', status: 'Completed', date: 'Jun 13, 09:10' },
+  { id: 'ORD-8812', customer: 'Marcus Johnson', phone: '+1 555-0167', items: 4, amount: 67.5, payment: 'Paid', status: 'Processing', date: 'Jun 13, 09:05' },
+  { id: 'ORD-8811', customer: 'Yuki Tanaka', phone: '+81 90-1234-5678', items: 11, amount: 198.2, payment: 'Paid', status: 'Completed', date: 'Jun 13, 08:58' },
+  { id: 'ORD-8810', customer: 'Aisha Bello', phone: '+234 802-1234', items: 3, amount: 41.6, payment: 'Paid', status: 'Pending', date: 'Jun 13, 08:51' },
 ];
 
 const statusColors: Record<string, string> = {
@@ -30,14 +32,14 @@ const paymentColors: Record<string, string> = {
 };
 
 const orderItems = [
-  { name: 'Organic Whole Milk 1L', qty: 2, price: '$4.98', total: '$9.96' },
-  { name: 'Sourdough Bread Loaf', qty: 1, price: '$6.49', total: '$6.49' },
-  { name: 'Free-Range Eggs 12pk', qty: 2, price: '$8.99', total: '$17.98' },
-  { name: 'Avocado (each)', qty: 3, price: '$1.49', total: '$4.47' },
-  { name: 'Atlantic Salmon Fillet 500g', qty: 1, price: '$18.99', total: '$18.99' },
-  { name: 'Greek Yogurt 500g', qty: 2, price: '$5.49', total: '$10.98' },
-  { name: 'Cherry Tomatoes 250g', qty: 2, price: '$3.49', total: '$6.98' },
-  { name: 'Extra Virgin Olive Oil 750ml', qty: 1, price: '$12.99', total: '$12.99' },
+  { name: 'Organic Whole Milk 1L', qty: 2, price: 4.98, total: 9.96 },
+  { name: 'Sourdough Bread Loaf', qty: 1, price: 6.49, total: 6.49 },
+  { name: 'Free-Range Eggs 12pk', qty: 2, price: 8.99, total: 17.98 },
+  { name: 'Avocado (each)', qty: 3, price: 1.49, total: 4.47 },
+  { name: 'Atlantic Salmon Fillet 500g', qty: 1, price: 18.99, total: 18.99 },
+  { name: 'Greek Yogurt 500g', qty: 2, price: 5.49, total: 10.98 },
+  { name: 'Cherry Tomatoes 250g', qty: 2, price: 3.49, total: 6.98 },
+  { name: 'Extra Virgin Olive Oil 750ml', qty: 1, price: 12.99, total: 12.99 },
 ];
 
 const tabs = ['All', 'Pending', 'Processing', 'Completed', 'Cancelled', 'Refunded'];
@@ -48,6 +50,8 @@ export function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<typeof allOrders[0] | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 10;
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
 
   const filtered = allOrders.filter(o =>
     (activeTab === 'All' || o.status === activeTab) &&
@@ -124,7 +128,7 @@ export function OrdersPage() {
                   <p className="text-xs text-gray-400">{order.phone}</p>
                 </td>
                 <td className="px-4 py-3.5 text-sm text-gray-600">{order.items} items</td>
-                <td className="px-4 py-3.5 text-sm text-gray-900" style={{ fontWeight: 600 }}>{order.amount}</td>
+                <td className="px-4 py-3.5 text-sm text-gray-900" style={{ fontWeight: 600 }}>{formatCurrency(order.amount, currency)}</td>
                 <td className="px-4 py-3.5">
                   <span className={`inline-flex px-2 py-0.5 rounded text-xs ${paymentColors[order.payment]}`} style={{ fontWeight: 500 }}>{order.payment}</span>
                 </td>
@@ -195,9 +199,9 @@ export function OrdersPage() {
                     <div key={item.name} className="flex items-center justify-between py-2 border-b border-gray-50">
                       <div>
                         <p className="text-sm text-gray-800">{item.name}</p>
-                        <p className="text-xs text-gray-400">Qty {item.qty} × {item.price}</p>
+                        <p className="text-xs text-gray-400">Qty {item.qty} × {formatCurrency(item.price, currency)}</p>
                       </div>
-                      <p className="text-sm text-gray-900" style={{ fontWeight: 500 }}>{item.total}</p>
+                      <p className="text-sm text-gray-900" style={{ fontWeight: 500 }}>{formatCurrency(item.total, currency)}</p>
                     </div>
                   ))}
                 </div>
@@ -206,7 +210,7 @@ export function OrdersPage() {
               {/* Total */}
               <div className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
                 <span className="text-sm text-gray-600" style={{ fontWeight: 500 }}>Total Amount</span>
-                <span className="text-lg text-gray-900" style={{ fontWeight: 700 }}>{selectedOrder.amount}</span>
+                <span className="text-lg text-gray-900" style={{ fontWeight: 700 }}>{formatCurrency(selectedOrder.amount, currency)}</span>
               </div>
 
               {/* Timeline */}

@@ -18,6 +18,8 @@ import {
   MessageSquare,
   Building2,
 } from 'lucide-react';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { formatCurrency } from '../../../utils/currency';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from './ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
@@ -33,7 +35,6 @@ import {
 } from './ui/alert-dialog';
 import { Switch } from './ui/switch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { useStoreProfile } from '../../../hooks/useStoreProfile';
 import {
   useEmployees,
   useCreateEmployee,
@@ -76,9 +77,9 @@ const roles: Role[] = ['Admin', 'Manager', 'Cashier', 'Inventory Staff'];
 
 const activityLogs = [
   { emp: 'Sofia Ramirez', action: 'Approved bulk stock update — 200 items restocked', time: '09:38', date: 'Today' },
-  { emp: 'Marcus Lee', action: 'Processed order ORD-8821 — $142.30', time: '09:42', date: 'Today' },
+  { emp: 'Marcus Lee', action: 'Processed order ORD-8821', amount: 142.3, time: '09:42', date: 'Today' },
   { emp: 'Kevin Torres', action: 'Updated stock for Atlantic Salmon Fillet (+200 units)', time: '09:15', date: 'Today' },
-  { emp: 'Aisha Bello', action: 'Refunded order ORD-8814 — $302.80', time: '08:52', date: 'Today' },
+  { emp: 'Aisha Bello', action: 'Refunded order ORD-8814', amount: 302.8, time: '08:52', date: 'Today' },
   { emp: 'Emma Wilson', action: 'Created promotion "Summer Fresh Savings"', time: '08:20', date: 'Today' },
   { emp: 'Rosa Martinez', action: 'Processed 18 transactions at Lane 5', time: '08:00', date: 'Today' },
 ];
@@ -127,6 +128,7 @@ export function StaffPage() {
   const [confirmAction, setConfirmAction] = useState<{ type: 'disable' | 'delete'; employee: Employee } | null>(null);
 
   const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
   const { data, isLoading } = useEmployees({ search: search || undefined });
   const employees = data?.employees || [];
 
@@ -438,7 +440,7 @@ export function StaffPage() {
                 </div>
                 <div className="flex-1">
                   <span className="text-sm text-gray-900" style={{ fontWeight: 500 }}>{log.emp}</span>
-                  <span className="text-sm text-gray-600"> {log.action}</span>
+                  <span className="text-sm text-gray-600"> {log.action}{log.amount ? ` — ${formatCurrency(log.amount, currency)}` : ''}</span>
                 </div>
                 <span className="text-xs text-gray-400 flex-shrink-0">{log.date}, {log.time}</span>
               </div>

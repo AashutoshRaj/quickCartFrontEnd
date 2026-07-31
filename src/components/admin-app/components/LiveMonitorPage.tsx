@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Activity, ShoppingCart, Users, Zap, TrendingUp, Wifi } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { formatCurrency } from '../../../utils/currency';
 
 const initialTransactions = [
-  { id: 'TXN-9041', customer: 'Maria Santos', items: 8, amount: '$142.30', cashier: 'Lane 3', status: 'completed', time: '09:42:11' },
-  { id: 'TXN-9040', customer: 'James Okafor', items: 3, amount: '$38.75', cashier: 'Lane 1', status: 'processing', time: '09:42:05' },
-  { id: 'TXN-9039', customer: 'Priya Nair', items: 12, amount: '$215.60', cashier: 'Lane 5', status: 'completed', time: '09:41:58' },
-  { id: 'TXN-9038', customer: 'Carlos Mendez', items: 5, amount: '$89.20', cashier: 'Self-Checkout 2', status: 'completed', time: '09:41:44' },
-  { id: 'TXN-9037', customer: 'Anna Kowalski', items: 2, amount: '$24.99', cashier: 'Lane 2', status: 'completed', time: '09:41:30' },
-  { id: 'TXN-9036', customer: 'David Chen', items: 9, amount: '$178.40', cashier: 'Lane 4', status: 'completed', time: '09:41:18' },
-  { id: 'TXN-9035', customer: 'Lisa Thompson', items: 6, amount: '$96.15', cashier: 'Self-Checkout 1', status: 'completed', time: '09:41:02' },
-  { id: 'TXN-9034', customer: 'Omar Hassan', items: 14, amount: '$302.80', cashier: 'Lane 3', status: 'completed', time: '09:40:49' },
+  { id: 'TXN-9041', customer: 'Maria Santos', items: 8, amount: 142.3, cashier: 'Lane 3', status: 'completed', time: '09:42:11' },
+  { id: 'TXN-9040', customer: 'James Okafor', items: 3, amount: 38.75, cashier: 'Lane 1', status: 'processing', time: '09:42:05' },
+  { id: 'TXN-9039', customer: 'Priya Nair', items: 12, amount: 215.6, cashier: 'Lane 5', status: 'completed', time: '09:41:58' },
+  { id: 'TXN-9038', customer: 'Carlos Mendez', items: 5, amount: 89.2, cashier: 'Self-Checkout 2', status: 'completed', time: '09:41:44' },
+  { id: 'TXN-9037', customer: 'Anna Kowalski', items: 2, amount: 24.99, cashier: 'Lane 2', status: 'completed', time: '09:41:30' },
+  { id: 'TXN-9036', customer: 'David Chen', items: 9, amount: 178.4, cashier: 'Lane 4', status: 'completed', time: '09:41:18' },
+  { id: 'TXN-9035', customer: 'Lisa Thompson', items: 6, amount: 96.15, cashier: 'Self-Checkout 1', status: 'completed', time: '09:41:02' },
+  { id: 'TXN-9034', customer: 'Omar Hassan', items: 14, amount: 302.8, cashier: 'Lane 3', status: 'completed', time: '09:40:49' },
 ];
 
 const liveChartBase = [
@@ -34,6 +36,8 @@ export function LiveMonitorPage() {
   const [chartData, setChartData] = useState(liveChartBase);
   const [pulse, setPulse] = useState(false);
   const [liveStats, setLiveStats] = useState({ revenue: 24839, orders: 1284, customers: 421, avgTxn: 19.3 });
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -66,10 +70,10 @@ export function LiveMonitorPage() {
       {/* Live KPIs */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Today's Revenue", value: `$${liveStats.revenue.toLocaleString()}`, icon: TrendingUp, color: 'text-green-600 bg-green-50' },
+          { label: "Today's Revenue", value: formatCurrency(liveStats.revenue, currency), icon: TrendingUp, color: 'text-green-600 bg-green-50' },
           { label: 'Total Orders', value: liveStats.orders.toLocaleString(), icon: ShoppingCart, color: 'text-blue-600 bg-blue-50' },
           { label: 'Customers In-Store', value: liveStats.customers.toString(), icon: Users, color: 'text-purple-600 bg-purple-50' },
-          { label: 'Avg Transaction', value: `$${liveStats.avgTxn}`, icon: Zap, color: 'text-orange-600 bg-orange-50' },
+          { label: 'Avg Transaction', value: liveStats.avgTxn.toString(), icon: Zap, color: 'text-orange-600 bg-orange-50' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${s.color}`}>
@@ -156,7 +160,7 @@ export function LiveMonitorPage() {
                   <td className="px-4 py-3 text-xs text-blue-600" style={{ fontWeight: 500 }}>{txn.id}</td>
                   <td className="px-4 py-3 text-sm text-gray-800">{txn.customer}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">{txn.items}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900" style={{ fontWeight: 500 }}>{txn.amount}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900" style={{ fontWeight: 500 }}>{formatCurrency(txn.amount, currency)}</td>
                   <td className="px-4 py-3 text-xs text-gray-600">{txn.cashier}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex px-2 py-0.5 rounded text-xs ${

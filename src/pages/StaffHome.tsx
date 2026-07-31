@@ -7,6 +7,7 @@ import { PATHS } from '../app/paths';
 import { getStaffDashboardStats, type StaffDashboardStats } from '../api/staffVerificationApi';
 import type { RootState } from '../types/index';
 import { formatCurrency } from '../utils/currency.ts';
+import { useStoreProfile } from '../hooks/useStoreProfile.ts';
 
 /**
  * Security Dashboard (Staff Home)
@@ -28,8 +29,12 @@ const StaffHome: React.FC = (): React.ReactElement => {
 
   if (!staffUser) return <></>;
 
-  const currency = useSelector((state: RootState) => state.store.activeStore?.currency || 'USD');
+  // const currency = useSelector((state: RootState) => state.store.activeStore?.currency || 'USD');
+  // console.log('StaffHome: stats:', currency);
 
+    const { data: storeProfile } = useStoreProfile();
+    const currency = storeProfile?.currency || 'USD';
+    
   return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         <div className="flex items-center justify-between">

@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { Scan, RefreshCw, Edit2, Package, TrendingUp, MapPin } from 'lucide-react';
+import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { formatCurrency } from '../../../utils/currency';
 
 const recentScans = [
-  { barcode: '5901234123457', name: 'Organic Whole Milk 1L', price: '$2.49', stock: 84, category: 'Dairy & Eggs', time: '09:42:11' },
-  { barcode: '4006381333931', name: 'Sourdough Bread Loaf', price: '$6.49', stock: 32, category: 'Bakery', time: '09:38:05' },
-  { barcode: '5000159484695', name: 'Free-Range Eggs 12pk', price: '$8.99', stock: 156, category: 'Dairy & Eggs', time: '09:31:44' },
-  { barcode: '0885909456413', name: 'Avocado (each)', price: '$1.49', stock: 210, category: 'Fresh Produce', time: '09:28:22' },
-  { barcode: '7613036250382', name: 'Greek Yogurt 500g', price: '$5.49', stock: 67, category: 'Dairy & Eggs', time: '09:15:18' },
+  { barcode: '5901234123457', name: 'Organic Whole Milk 1L', price: 2.49, stock: 84, category: 'Dairy & Eggs', time: '09:42:11' },
+  { barcode: '4006381333931', name: 'Sourdough Bread Loaf', price: 6.49, stock: 32, category: 'Bakery', time: '09:38:05' },
+  { barcode: '5000159484695', name: 'Free-Range Eggs 12pk', price: 8.99, stock: 156, category: 'Dairy & Eggs', time: '09:31:44' },
+  { barcode: '0885909456413', name: 'Avocado (each)', price: 1.49, stock: 210, category: 'Fresh Produce', time: '09:28:22' },
+  { barcode: '7613036250382', name: 'Greek Yogurt 500g', price: 5.49, stock: 67, category: 'Dairy & Eggs', time: '09:15:18' },
 ];
 
 const scannedProduct = {
   name: 'Organic Whole Milk 1L',
   barcode: '5901234123457',
   sku: 'QC-DAI-0012',
-  price: '$2.49',
-  cost: '$1.42',
+  price: 2.49,
+  cost: 1.42,
   stock: 84,
   threshold: 20,
   category: 'Dairy & Eggs',
@@ -28,6 +30,8 @@ export function BarcodeScannerPage() {
   const [scanned, setScanned] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState('');
   const [newStock, setNewStock] = useState('');
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
 
   const handleScan = () => {
     setScanning(true);
@@ -144,7 +148,7 @@ export function BarcodeScannerPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Selling Price', value: scannedProduct.price, sub: `Cost: ${scannedProduct.cost}`, icon: TrendingUp, color: 'bg-green-50 text-green-600' },
+                  { label: 'Selling Price', value: formatCurrency(scannedProduct.price, currency), sub: `Cost: ${formatCurrency(scannedProduct.cost, currency)}`, icon: TrendingUp, color: 'bg-green-50 text-green-600' },
                   { label: 'Stock Available', value: scannedProduct.stock.toString(), sub: `Threshold: ${scannedProduct.threshold}`, icon: Package, color: 'bg-blue-50 text-blue-600' },
                   { label: 'Location', value: scannedProduct.location, sub: 'Primary warehouse', icon: MapPin, color: 'bg-orange-50 text-orange-600' },
                 ].map(s => (
@@ -224,7 +228,7 @@ export function BarcodeScannerPage() {
                 <td className="px-4 py-3">
                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{scan.category}</span>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900" style={{ fontWeight: 600 }}>{scan.price}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900" style={{ fontWeight: 600 }}>{formatCurrency(scan.price, currency)}</td>
                 <td className="px-4 py-3">
                   <span className={`text-sm ${scan.stock < 50 ? 'text-orange-600' : 'text-gray-700'}`} style={{ fontWeight: 500 }}>{scan.stock}</span>
                 </td>

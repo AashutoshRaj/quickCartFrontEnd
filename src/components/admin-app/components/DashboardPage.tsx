@@ -9,10 +9,11 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import { useStoreProfile } from '../../../hooks/useStoreProfile';
+import { formatCurrency } from '../../../utils/currency';
 import { useAuth } from '../../../admin-auth/AuthContext';
 
 const kpiCards = [
-  { label: "Today's Revenue", value: '$24,839', change: '+12.4%', up: true, icon: TrendingUp, color: 'bg-green-50 text-green-600' },
+  { label: "Today's Revenue", value: 24839, isCurrency: true, change: '+12.4%', up: true, icon: TrendingUp, color: 'bg-green-50 text-green-600' },
   { label: "Today's Orders", value: '1,284', change: '+8.1%', up: true, icon: ShoppingCart, color: 'bg-blue-50 text-blue-600' },
   { label: 'Active Customers', value: '3,921', change: '+5.3%', up: true, icon: Users, color: 'bg-purple-50 text-purple-600' },
   { label: 'Products in Inventory', value: '52,400', change: '+234', up: true, icon: Package, color: 'bg-orange-50 text-orange-600' },
@@ -21,6 +22,7 @@ const kpiCards = [
 ];
 
 const revenueData = [
+
   { day: 'Mon', revenue: 18200, orders: 920 },
   { day: 'Tue', revenue: 21400, orders: 1080 },
   { day: 'Wed', revenue: 19800, orders: 990 },
@@ -40,11 +42,11 @@ const categoryData = [
 ];
 
 const topProducts = [
-  { name: 'Organic Whole Milk 1L', sold: 842, revenue: '$2,105', trend: 'up' },
-  { name: 'Sourdough Bread Loaf', sold: 734, revenue: '$1,835', trend: 'up' },
-  { name: 'Free-Range Eggs 12pk', sold: 698, revenue: '$2,094', trend: 'up' },
-  { name: 'Atlantic Salmon Fillet', sold: 521, revenue: '$5,210', trend: 'down' },
-  { name: 'Avocado (each)', sold: 904, revenue: '$1,356', trend: 'up' },
+  { name: 'Organic Whole Milk 1L', sold: 842, revenue: 2105, trend: 'up' },
+  { name: 'Sourdough Bread Loaf', sold: 734, revenue: 1835, trend: 'up' },
+  { name: 'Free-Range Eggs 12pk', sold: 698, revenue: 2094, trend: 'up' },
+  { name: 'Atlantic Salmon Fillet', sold: 521, revenue: 5210, trend: 'down' },
+  { name: 'Avocado (each)', sold: 904, revenue: 1356, trend: 'up' },
 ];
 
 const peakHoursData = [
@@ -59,10 +61,10 @@ const peakHoursData = [
 ];
 
 const recentActivity = [
-  { type: 'order', message: 'New order #ORD-8821 from Maria Santos — $142.30', time: '2 min ago', color: 'bg-blue-500' },
+  { type: 'order', message: 'New order #ORD-8821 from Maria Santos', amount: 142.3, time: '2 min ago', color: 'bg-blue-500' },
   { type: 'stock', message: 'Low stock alert: Organic Milk 1L — 12 units remaining', time: '5 min ago', color: 'bg-red-500' },
   { type: 'customer', message: 'New customer registered: James Okafor (+234)', time: '11 min ago', color: 'bg-green-500' },
-  { type: 'order', message: 'Order #ORD-8819 completed — $89.50', time: '18 min ago', color: 'bg-blue-500' },
+  { type: 'order', message: 'Order #ORD-8819 completed', amount: 89.5, time: '18 min ago', color: 'bg-blue-500' },
   { type: 'import', message: 'Product import completed: 2,400 items synced', time: '34 min ago', color: 'bg-purple-500' },
   { type: 'stock', message: 'Restock confirmed: Atlantic Salmon — 200 units added', time: '1 hr ago', color: 'bg-orange-500' },
 ];
@@ -79,6 +81,7 @@ export function DashboardPage() {
   const [revenueRange, setRevenueRange] = useState('7d');
   const { user } = useAuth();
   const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
 
   const dashboardDate = new Intl.DateTimeFormat(undefined, {
     weekday: 'long',
@@ -87,6 +90,7 @@ export function DashboardPage() {
     year: 'numeric',
   }).format(new Date());
   const storeName = storeProfile?.name || user?.storeName || 'Your Store';
+  const formatRevenue = (value: number) => formatCurrency(value, currency, undefined, 0);
 
   return (
     <div className="p-6 space-y-6">
@@ -115,7 +119,9 @@ export function DashboardPage() {
                 {card.change}
               </span>
             </div>
-            <p className="text-xl text-gray-900" style={{ fontWeight: 700 }}>{card.value}</p>
+            <p className="text-xl text-gray-900" style={{ fontWeight: 700 }}>
+              {card.isCurrency ? formatCurrency(card.value as number, currency) : card.value}
+            </p>
             <p className="text-xs text-gray-500 mt-0.5">{card.label}</p>
           </div>
         ))}
@@ -162,8 +168,8 @@ export function DashboardPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']} contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => formatRevenue(Number(v) / 1000).replace(/\D00$/, 'k')} />
+              <Tooltip formatter={(v: number) => [formatCurrency(Number(v), currency), 'Revenue']} contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }} />
               <Area type="monotone" dataKey="revenue" stroke="#22c55e" strokeWidth={2} fill="url(#revGrad)" />
             </AreaChart>
           </ResponsiveContainer>
@@ -221,7 +227,7 @@ export function DashboardPage() {
                 <span className="text-xs text-gray-400 w-4" style={{ fontWeight: 600 }}>#{i + 1}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-800 truncate" style={{ fontWeight: 500 }}>{p.name}</p>
-                  <p className="text-xs text-gray-400">{p.sold} sold · {p.revenue}</p>
+                  <p className="text-xs text-gray-400">{p.sold} sold · {formatCurrency(p.revenue, currency)}</p>
                 </div>
                 <span className={`text-xs ${p.trend === 'up' ? 'text-green-500' : 'text-red-400'}`}>
                   {p.trend === 'up' ? '↑' : '↓'}
