@@ -33,7 +33,7 @@ const StaffHome: React.FC = (): React.ReactElement => {
   // console.log('StaffHome: stats:', currency);
 
   const { data: storeProfile } = useStoreProfile();
-  const currency = storeProfile?.currency || 'USD';
+  const currency = storeProfile?.currency || 'INR';
 
   console.log("setcurrency", currency);
   return (
