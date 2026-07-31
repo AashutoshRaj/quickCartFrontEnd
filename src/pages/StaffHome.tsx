@@ -32,11 +32,10 @@ const StaffHome: React.FC = (): React.ReactElement => {
   // const currency = useSelector((state: RootState) => state.store.activeStore?.currency || 'USD');
   // console.log('StaffHome: stats:', currency);
 
-    const { data: storeProfile } = useStoreProfile();
-    const currency = storeProfile?.currency;
-    console.log('StaffHomecurrency', currency);
+  const { data: storeProfile } = useStoreProfile();
+  const currency = storeProfile?.currency || 'USD';
 
-    
+  console.log("setcurrency", currency);
   return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         <div className="flex items-center justify-between">
