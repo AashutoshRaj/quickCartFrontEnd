@@ -11,7 +11,7 @@ export const SUPPORTED_CURRENCIES: CurrencyCode[] = [
   'AED',
 ];
 
-export const DEFAULT_CURRENCY: CurrencyCode = 'USD';
+export const DEFAULT_CURRENCY: CurrencyCode = 'INR';
 
 export const normalizeCurrencyCode = (currency?: string): CurrencyCode => {
   if (!currency || typeof currency !== 'string') {

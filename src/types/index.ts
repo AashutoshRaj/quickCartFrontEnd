@@ -576,6 +576,8 @@ export interface MenuItemProps {
   onClick?: () => void;
 }
 
+export type CurrencyCode = string; // e.g., 'USD', 'EUR', 'GBP', etc.
+
 /**
  * Export types for Firebase instances
  */
