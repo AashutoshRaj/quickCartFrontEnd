@@ -178,7 +178,7 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
           <div className="bg-white rounded-2xl border border-outline/10 shadow-sm p-4 w-full text-left space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-secondary font-inter">Order Number</span>
-              <span className="text-on-surface font-inter font-semibold">#{verified.orderNumber}</span>
+              <span className="text-on-surface font-inter font-semibold truncate block">#{verified.orderNumber}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-secondary font-inter">Verified By</span>
@@ -251,7 +251,7 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-secondary font-inter">Order Number</span>
-          <span className="text-on-surface font-inter font-semibold">#{order.orderNumber}</span>
+          <span className="text-on-surface font-inter font-semibold truncate block">#{order.orderNumber}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-secondary font-inter">Payment Status</span>
@@ -296,13 +296,13 @@ const StaffVerifyResult: React.FC = (): React.ReactElement => {
                   checked ? 'border-primary bg-primary/5' : 'border-outline/20 bg-white'
                 }`}
               >
-                <div className="text-left">
+                <div className="text-left flex-1 max-w-[80%]">
                   <p className="text-on-surface font-inter font-semibold text-sm truncate">{item.name}</p>
                   <p className="text-secondary font-inter text-xs mt-1">
                     Qty {item.quantity} • {formatCurrency(item.price, currency)}
                   </p>
                 </div>
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full border transition-colors duration-200 ${checked ? 'border-primary bg-primary text-white' : 'border-outline/40 bg-white text-secondary'}`}>
+                <div className={`flex items-center justify-center min-w-8 w-8 h-8 rounded-full border transition-colors duration-200 ${checked ? 'border-primary bg-primary text-white' : 'border-outline/40 bg-white text-secondary'}`}>
                   {checked ? '✓' : ''}
                 </div>
               </button>

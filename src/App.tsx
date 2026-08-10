@@ -90,12 +90,16 @@ function AppContent(): ReactElement {
     location.pathname.match(/^\/staff-verify\/[^\/]+$/) !== null;
 
   const isAdminRoute = location.pathname.startsWith('/admin');
-
+const isStaffHome = location.pathname === PATHS.STAFF_HOME;
   return (
     <div
       className={isAdminRoute ? '' : `max-w-md mx-auto bg-background shadow-2xl h-dvh overflow-auto relative flex flex-col ${
         pageQR ? "pt-0" : "pt-[50px]"
-      }`}
+      }
+     ${isStaffHome ? "!p-[15px]" : ""}
+      `
+      
+    }
     >
       <AnimatePresence mode="wait">
         {loading ? (
