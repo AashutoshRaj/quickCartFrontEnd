@@ -18,6 +18,8 @@ interface OrderDetails {
   createdAt: string;
   paidAt?: string;
   completedAt?: string;
+  paymentStatus?: string;
+  exitQrToken?: string;
 }
 
 /**
@@ -72,8 +74,8 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
   }, [sessionId, queryClient]);
 
   useEffect(() => {
-    if (qrCanvasRef.current && sessionId) {
-      QRCode.toCanvas(qrCanvasRef.current, sessionId, {
+    if (qrCanvasRef.current && order?.exitQrToken && order.paymentStatus === 'completed') {
+      QRCode.toCanvas(qrCanvasRef.current, order.exitQrToken, {
         width: 200,
         margin: 1,
         color: {
@@ -82,7 +84,7 @@ const PaymentSuccess: React.FC = (): React.ReactElement => {
         },
       }).catch((err: Error) => console.error('Error generating QR code:', err));
     }
-  }, [sessionId]);
+  }, [order]);
 
   const handleDone = (e: React.MouseEvent<HTMLButtonElement>): void => {
     e.preventDefault();

@@ -28,6 +28,7 @@ export const PATHS = {
   // Payment Routes
   PAYMENT_SUCCESS: '/payment-success',
   PAYMENT_CANCEL: '/payment-cancel',
+  RECEIPT: '/receipt',
 
   // Test/Debug Routes
   QR_TEST: '/qr-test',

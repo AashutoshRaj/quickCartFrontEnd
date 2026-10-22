@@ -7,6 +7,7 @@ import {
   Calendar,
   Clock,
   Download,
+  ReceiptText,
   Copy,
   Check,
 } from 'lucide-react';
@@ -66,6 +67,14 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
     e.preventDefault();
     if (orderId) {
       downloadInvoice.mutate(orderId);
+    }
+  };
+
+  const handleViewReceipt = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.preventDefault();
+    const sessionId = order?.sessionId as string | undefined;
+    if (sessionId) {
+      navigate(`/receipt?session_id=${encodeURIComponent(sessionId)}`);
     }
   };
 
@@ -372,7 +381,7 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
         )}
 
         {/* Download Invoice */}
-        <motion.button
+        {/* <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={handleDownloadInvoice}
           disabled={downloadInvoice.isPending}
@@ -380,6 +389,15 @@ const OrderDetailsPage: React.FC = (): React.ReactElement => {
         >
           <Download size={18} />
           {downloadInvoice.isPending ? 'Downloading...' : 'Download Invoice PDF'}
+        </motion.button> */}
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={handleViewReceipt}
+          disabled={!order.sessionId || order.paymentStatus !== 'completed'}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-900 text-gray-900 rounded-xl font-inter font-semibold hover:bg-gray-50 disabled:opacity-50 transition-colors"
+        >
+          <ReceiptText size={18} />
+          View Digital Receipt
         </motion.button>
       </main>
       <BottomNav />

@@ -34,6 +34,7 @@ const History = lazy(() => import('./pages/History.tsx'))
 const OrderDetails = lazy(() => import('./pages/OrderDetails.tsx'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess.tsx'))
 const PaymentCancel = lazy(() => import('./pages/PaymentCancel.tsx'))
+const Receipt = lazy(() => import('./pages/Receipt.tsx'))
 const ExitGate = lazy(() => import('./pages/ExitGate.tsx'))
 const QRTest = lazy(() => import('./pages/QRTest.tsx'))
 const StaffHome = lazy(() => import('./pages/StaffHome.tsx'))
@@ -165,6 +166,7 @@ const isStaffHome = location.pathname === PATHS.STAFF_HOME;
                 <Route path={PATHS.ORDER_DETAILS} element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
                 <Route path={PATHS.PAYMENT_SUCCESS} element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
                 <Route path={PATHS.PAYMENT_CANCEL} element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+                <Route path={PATHS.RECEIPT} element={<ProtectedRoute><Receipt /></ProtectedRoute>} />
                 <Route path={PATHS.QR_TEST} element={<QRTest />} />
                 <Route path="/admin/*" element={<AdminApp />} />
                 <Route path={PATHS.NOT_FOUND} element={<Navigate to={PATHS.ONBOARDING} replace />} />
