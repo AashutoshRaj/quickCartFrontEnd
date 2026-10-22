@@ -1,17 +1,11 @@
 import type { CurrencyCode } from '../types/index';
 
 export const SUPPORTED_CURRENCIES: CurrencyCode[] = [
-  'USD',
-  'EUR',
-  'GBP',
-  'INR',
-  'JPY',
-  'AUD',
-  'CAD',
   'AED',
+  'INR',
 ];
 
-export const DEFAULT_CURRENCY: CurrencyCode = 'INR';
+export const DEFAULT_CURRENCY: CurrencyCode = 'AED';
 
 export const normalizeCurrencyCode = (currency?: string): CurrencyCode => {
   if (!currency || typeof currency !== 'string') {

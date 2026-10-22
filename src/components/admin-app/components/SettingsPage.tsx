@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 import { useInvalidateStoreProfile } from '../../../hooks/useStoreProfile';
 import { getStoreProfile, updateStoreProfile, regenerateStoreQRCode } from '../../../api/storeApi';
+import { normalizeCurrencyCode } from '../../../utils/currency';
 
 const sections = [
   { id: 'store', label: 'Store Profile', icon: Store },
@@ -80,7 +81,7 @@ const defaultStoreProfile: StoreProfile = {
   country: '',
   postalCode: '',
   description: '',
-  currency: 'USD',
+  currency: 'AED',
   timezone: 'UTC',
   businessHours: [],
 };
@@ -185,6 +186,7 @@ export function SettingsPage() {
         email: storeProfile.email || '',
         phoneNumber: storeProfile.phoneNumber || '',
         address: storeProfile.address || '',
+        currency: normalizeCurrencyCode(storeProfile.currency),
       };
 
       console.log('Initial data to set:', initialData);
@@ -199,7 +201,7 @@ export function SettingsPage() {
     mutationFn: saveStoreProfileAPI,
     onSuccess: (data) => {
       queryClient.setQueryData(['storeProfile'], data);
-      setFormData(data);
+      setFormData({ ...data, currency: normalizeCurrencyCode(data.currency) });
       setHasChanges(false);
       setLogoPreview(data.logo || null);
       // Invalidate cache to trigger refetch in Header & Sidebar
@@ -216,7 +218,7 @@ export function SettingsPage() {
     mutationFn: generateStoreQRCodeAPI,
     onSuccess: (data) => {
       queryClient.setQueryData(['storeProfile'], data);
-      setFormData(data);
+      setFormData({ ...data, currency: normalizeCurrencyCode(data.currency) });
       invalidateStoreProfile();
       toast.success('QR code generated successfully');
     },
@@ -557,13 +559,8 @@ export function SettingsPage() {
                             onChange={handleInputChange}
                             className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
                           >
-                            <option value="USD">USD - US Dollar</option>
-                            <option value="EUR">EUR - Euro</option>
-                            <option value="GBP">GBP - British Pound</option>
+                            <option value="AED">AED - UAE Dirham</option>
                             <option value="INR">INR - Indian Rupee</option>
-                            <option value="JPY">JPY - Japanese Yen</option>
-                            <option value="AUD">AUD - Australian Dollar</option>
-                            <option value="CAD">CAD - Canadian Dollar</option>
                           </select>
                         </div>
 

@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { StoreQRCode } from '../../../components/StoreQRCode';
 import { useStoreProfile, useInvalidateStoreProfile } from '../../../hooks/useStoreProfile';
 import { updateStoreProfile, regenerateStoreQRCode } from '../../../api/storeApi';
+import { normalizeCurrencyCode } from '../../../utils/currency';
 
 interface StoreData {
   _id?: string;
@@ -38,7 +39,7 @@ export function StoreProfilePage(): React.ReactElement {
     name: '',
     address: '',
     phoneNumber: '',
-    currency: 'USD',
+    currency: 'AED',
     timezone: 'UTC',
     status: 'active',
     logo: null,
@@ -52,7 +53,7 @@ export function StoreProfilePage(): React.ReactElement {
         name: storeProfile.name || '',
         address: storeProfile.address || '',
         phoneNumber: storeProfile.phoneNumber || '',
-        currency: storeProfile.currency || 'USD',
+        currency: normalizeCurrencyCode(storeProfile.currency),
         timezone: storeProfile.timezone || 'UTC',
         status: storeProfile.status || 'active',
         logo: storeProfile.logo || null,
@@ -81,7 +82,7 @@ export function StoreProfilePage(): React.ReactElement {
         name: savedStore.name || '',
         address: savedStore.address || '',
         phoneNumber: savedStore.phoneNumber || '',
-        currency: savedStore.currency || 'USD',
+        currency: normalizeCurrencyCode(savedStore.currency),
         timezone: savedStore.timezone || 'UTC',
         status: savedStore.status || 'active',
         logo: savedStore.logo || null,
@@ -143,7 +144,7 @@ export function StoreProfilePage(): React.ReactElement {
         name: storeProfile.name || '',
         address: storeProfile.address || '',
         phoneNumber: storeProfile.phoneNumber || '',
-        currency: storeProfile.currency || 'USD',
+        currency: normalizeCurrencyCode(storeProfile.currency),
         timezone: storeProfile.timezone || 'UTC',
         status: storeProfile.status || 'active',
         logo: storeProfile.logo || null,
@@ -280,13 +281,8 @@ export function StoreProfilePage(): React.ReactElement {
                       disabled={!isEditing}
                       className="w-full px-4 py-2 rounded-lg border border-gray-300 disabled:bg-gray-50 disabled:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option>USD</option>
-                      <option>EUR</option>
-                      <option>GBP</option>
-                      <option>INR</option>
-                      <option>JPY</option>
-                      <option>AUD</option>
-                      <option>CAD</option>
+                      <option value="AED">AED - UAE Dirham</option>
+                      <option value="INR">INR - Indian Rupee</option>
                     </select>
                   </div>
                   <div>

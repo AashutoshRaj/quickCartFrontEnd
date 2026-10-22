@@ -3,7 +3,7 @@ import { useForm, useWatch, type FieldValues } from 'react-hook-form';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { Eye, EyeOff, Loader2, ScanFace, ShoppingBag } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, Loader2, ScanFace, ShoppingBag } from 'lucide-react';
 import { PATHS } from '../app/paths';
 import {
   useCheckPhone,
@@ -40,6 +40,70 @@ interface SendOTPResponse {
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN_SECONDS = 30;
+
+interface Country {
+  code: string;
+  name: string;
+  flag: string;
+  dialCode: string;
+  minDigits: number;
+  maxDigits: number;
+  format: (digits: string) => string;
+  isValid: (digits: string) => boolean;
+}
+
+const groupPhone = (digits: string, groups: number[]): string => {
+  let cursor = 0;
+  return groups
+    .map((group) => {
+      const part = digits.slice(cursor, cursor + group);
+      cursor += group;
+      return part;
+    })
+    .filter(Boolean)
+    .join(' ');
+};
+
+const getNationalDigits = (value: string, country: Country): string => {
+  const digits = value.replace(/\D/g, '');
+  const dialDigits = country.dialCode.replace('+', '');
+
+  // Accept an international value pasted into the local-number field, but
+  // remove the country code before formatting and validating it.
+  if (digits.startsWith(dialDigits) && digits.length > country.maxDigits) {
+    return digits.slice(dialDigits.length);
+  }
+
+  return digits;
+};
+
+const toInternationalPhoneNumber = (nationalDigits: string, country: Country): string => {
+  return `${country.dialCode}${nationalDigits.replace(/^0+/, '')}`;
+};
+
+const COUNTRIES: Country[] = [
+  {
+    code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪', dialCode: '+971', minDigits: 8, maxDigits: 10,
+    format: (digits) => digits.length <= 9 ? groupPhone(digits, [2, 3, 4]) : groupPhone(digits, [3, 3, 4]),
+    isValid: (digits) => /^(?:0?(?:50|52|54|55|56|58)\d{7})$/.test(digits),
+  },
+  { code: 'IN', name: 'India', flag: '🇮🇳', dialCode: '+91', minDigits: 10, maxDigits: 10, format: (digits) => groupPhone(digits, [5, 5]), isValid: (digits) => /^[6-9]\d{9}$/.test(digits) },
+  { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1', minDigits: 10, maxDigits: 10, format: (digits) => digits.length > 3 ? `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}${digits.length > 6 ? `-${digits.slice(6)}` : ''}` : digits, isValid: (digits) => /^[2-9]\d{9}$/.test(digits) },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1', minDigits: 10, maxDigits: 10, format: (digits) => digits.length > 3 ? `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}${digits.length > 6 ? `-${digits.slice(6)}` : ''}` : digits, isValid: (digits) => /^[2-9]\d{9}$/.test(digits) },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44', minDigits: 10, maxDigits: 10, format: (digits) => groupPhone(digits, [4, 3, 3]), isValid: (digits) => /^7\d{9}$/.test(digits) },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', dialCode: '+966', minDigits: 9, maxDigits: 10, format: (digits) => groupPhone(digits, [2, 3, 4]), isValid: (digits) => /^(?:0?5\d{8})$/.test(digits) },
+  { code: 'QA', name: 'Qatar', flag: '🇶🇦', dialCode: '+974', minDigits: 8, maxDigits: 8, format: (digits) => groupPhone(digits, [4, 4]), isValid: (digits) => /^[3-7]\d{7}$/.test(digits) },
+  { code: 'KW', name: 'Kuwait', flag: '🇰🇼', dialCode: '+965', minDigits: 8, maxDigits: 8, format: (digits) => groupPhone(digits, [4, 4]), isValid: (digits) => /^[569]\d{7}$/.test(digits) },
+  { code: 'OM', name: 'Oman', flag: '🇴🇲', dialCode: '+968', minDigits: 8, maxDigits: 8, format: (digits) => groupPhone(digits, [4, 4]), isValid: (digits) => /^[79]\d{7}$/.test(digits) },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61', minDigits: 9, maxDigits: 10, format: (digits) => digits.length > 1 ? `${digits.slice(0, 1)} ${digits.slice(1, 5)} ${digits.slice(5)}`.trim() : digits, isValid: (digits) => /^4\d{8}$/.test(digits) },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', dialCode: '+49', minDigits: 10, maxDigits: 11, format: (digits) => groupPhone(digits, [3, 3, 4]), isValid: (digits) => /^1[5-7]\d{8,9}$/.test(digits) },
+  { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '+33', minDigits: 9, maxDigits: 9, format: (digits) => groupPhone(digits, [1, 2, 2, 2, 2]), isValid: (digits) => /^[67]\d{8}$/.test(digits) },
+  { code: 'PK', name: 'Pakistan', flag: '🇵🇰', dialCode: '+92', minDigits: 10, maxDigits: 11, format: (digits) => groupPhone(digits, [4, 3, 4]), isValid: (digits) => /^3\d{9}$/.test(digits) },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', dialCode: '+65', minDigits: 8, maxDigits: 8, format: (digits) => groupPhone(digits, [4, 4]), isValid: (digits) => /^[689]\d{7}$/.test(digits) },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦', dialCode: '+27', minDigits: 9, maxDigits: 10, format: (digits) => groupPhone(digits, [2, 3, 4]), isValid: (digits) => /^7\d{8}$/.test(digits) },
+];
+
+const DEFAULT_COUNTRY: Country = COUNTRIES[0]!;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -85,6 +149,7 @@ const Login: React.FC = (): React.ReactElement => {
   const [authStep, setAuthStep] = useState<'phone' | 'otp' | 'name'>('phone');
   const [registrationToken, setRegistrationToken] = useState<string>('');
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [selectedCountry, setSelectedCountry] = useState<Country>(DEFAULT_COUNTRY);
 
   const [showPassword, setShowPassword] = useState(false);
   const [identifier, setIdentifier] = useState('');
@@ -124,6 +189,9 @@ const Login: React.FC = (): React.ReactElement => {
   const phoneNumber = useWatch({ control, name: 'phoneNumber' }) || '';
   const otp = useWatch({ control, name: 'otp' }) || '';
   const name = useWatch({ control, name: 'name' }) || '';
+  const localPhoneDigits = getNationalDigits(phoneNumber, selectedCountry);
+  const isPhoneValid = selectedCountry.isValid(localPhoneDigits);
+  const completePhoneNumber = toInternationalPhoneNumber(localPhoneDigits, selectedCountry);
 
   register('otp', {
     required: showOtpInput ? 'Verification code is required' : false,
@@ -145,10 +213,10 @@ const Login: React.FC = (): React.ReactElement => {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  const handleCheckAndSendOTP = async (data: LoginFormData): Promise<void> => {
+  const handleCheckAndSendOTP = async (): Promise<void> => {
     try {
-      await checkPhoneMutation.mutateAsync(data.phoneNumber);
-      const response = await sendOTPMutation.mutateAsync(data.phoneNumber);
+      await checkPhoneMutation.mutateAsync(completePhoneNumber);
+      const response = await sendOTPMutation.mutateAsync(completePhoneNumber);
 
       if ((response as SendOTPResponse).success || (response as SendOTPResponse).status === 'success') {
         setAuthStep('otp');
@@ -163,7 +231,7 @@ const Login: React.FC = (): React.ReactElement => {
   const handleResendOTP = async (): Promise<void> => {
     if (resendCooldown > 0 || loading) return;
     try {
-      await sendOTPMutation.mutateAsync(phoneNumber);
+      await sendOTPMutation.mutateAsync(completePhoneNumber);
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       toast.success('OTP resent 🎉');
     } catch (error) {
@@ -174,7 +242,7 @@ const Login: React.FC = (): React.ReactElement => {
 
   const handleVerifyOTP = async (data: LoginFormData): Promise<void> => {
     try {
-      const response = await verifyOTPMutation.mutateAsync({ phoneNumber: data.phoneNumber, otp: data.otp });
+      const response = await verifyOTPMutation.mutateAsync({ phoneNumber: completePhoneNumber, otp: data.otp });
 
       if ((response as OTPVerifyResponse).requiresRegistration) {
         setRegistrationToken((response as OTPVerifyResponse).registrationToken || '');
@@ -218,15 +286,24 @@ const Login: React.FC = (): React.ReactElement => {
 
     return authStep === 'otp'
       ? handleVerifyOTP(formData)
-      : handleCheckAndSendOTP(formData);
+      : handleCheckAndSendOTP();
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const digits = getNationalDigits(e.target.value, selectedCountry).slice(0, selectedCountry.maxDigits);
     setValue(
       'phoneNumber',
-      e.target.value.replace(/\D/g, '').slice(0, 10),
+      selectedCountry.format(digits),
       { shouldValidate: true }
     );
+    setAuthStep('phone');
+    setRegistrationToken('');
+  };
+
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    const country = COUNTRIES.find(({ code }) => code === e.target.value) || DEFAULT_COUNTRY;
+    setSelectedCountry(country);
+    setValue('phoneNumber', '', { shouldValidate: true });
     setAuthStep('phone');
     setRegistrationToken('');
   };
@@ -428,24 +505,44 @@ const Login: React.FC = (): React.ReactElement => {
                   className="space-y-4"
                   noValidate
                 >
-                  <FieldShell label="Phone Number" htmlFor="phoneNumber" error={errors.phoneNumber?.message as string}>
-                    <span className="mr-3 border-r border-border py-4 pr-3 font-bold text-text-primary">
-                      +91
-                    </span>
+                  <FieldShell
+                    label="Phone Number"
+                    htmlFor="phoneNumber"
+                    error={errors.phoneNumber?.message as string}
+                  >
+                    <div className="relative mr-3 flex items-center border-r border-border pr-5">
+                      <span className="mr-1.5 text-lg leading-none" aria-hidden="true">{selectedCountry.flag}</span>
+                      <select
+                        aria-label="Country"
+                        value={selectedCountry.code}
+                        onChange={handleCountryChange}
+                        disabled={authStep !== 'phone'}
+                        title={`${selectedCountry.name} (${selectedCountry.dialCode})`}
+                        className="h-[52px] w-5 appearance-none bg-transparent text-transparent outline-none disabled:cursor-not-allowed [&>option]:text-text-primary"
+                      >
+                        {COUNTRIES.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.flag} {country.name} ({country.dialCode})
+                          </option>
+                        ))}
+                      </select>
+                      <span className="ml-1 whitespace-nowrap font-bold text-text-primary" aria-hidden="true">
+                        {selectedCountry.dialCode}
+                      </span>
+                      <ChevronDown size={15} className="pointer-events-none absolute right-0 text-text-secondary" aria-hidden="true" />
+                    </div>
                     <input
                       id="phoneNumber"
                       type="tel"
-                      inputMode="numeric"
-                      placeholder="0000000000"
-                      className="h-[52px] flex-1 bg-transparent font-inter text-text-primary outline-none placeholder:text-text-secondary/60"
+                      // inputMode="numeric"
+                      placeholder={selectedCountry.code === 'AE' ? '501234567' : 'Phone number'}
+                      className="h-[52px] min-w-0 flex-1 bg-transparent font-inter text-text-primary outline-none placeholder:text-text-secondary/60"
                       aria-invalid={!!errors.phoneNumber}
                       disabled={authStep !== 'phone'}
                       {...register('phoneNumber', {
                         required: 'Phone number is required',
-                        pattern: {
-                          value: /^[6-9]\d{9}$/,
-                          message: 'Enter a valid 10-digit phone number',
-                        },
+                        validate: (value) => selectedCountry.isValid(getNationalDigits(String(value), selectedCountry))
+                          || `Enter a valid ${selectedCountry.name} phone number`,
                         onChange: handlePhoneChange,
                       })}
                     />
@@ -533,7 +630,7 @@ const Login: React.FC = (): React.ReactElement => {
                     type="submit"
                     disabled={
                       loading ||
-                      (authStep === 'phone' && phoneNumber.length !== 10) ||
+                      (authStep === 'phone' && !isPhoneValid) ||
                       (authStep === 'otp' && otp.length !== OTP_LENGTH) ||
                       (authStep === 'name' && name.trim().length < 2)
                     }
