@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-labelledby="title">
+  <title id="title">QuickCart</title>
+  <rect width="192" height="192" rx="42" fill="#FFB800"/>
+  <path d="M52 70h88l-7 70H59l-7-70Z" fill="#fff"/>
+  <path d="M72 70c0-16 10-28 24-28s24 12 24 28" fill="none" stroke="#0f1c2c" stroke-width="10" stroke-linecap="round"/>
+  <path d="M72 92h48" stroke="#0f1c2c" stroke-width="9" stroke-linecap="round"/>
+</svg>

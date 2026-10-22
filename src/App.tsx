@@ -21,6 +21,7 @@ import { useInitializeStaffAuth } from './hooks/useInitializeStaffAuth.ts';
 // Components
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import StaffProtectedRoute from './components/StaffProtectedRoute.tsx'
+import InstallPrompt from './components/InstallPrompt.tsx'
 
 // Pages (lazy-loaded: each becomes its own chunk, fetched only when its route is visited)
 const Home = lazy(() => import('./pages/Home.tsx'))
@@ -175,6 +176,7 @@ const isStaffHome = location.pathname === PATHS.STAFF_HOME;
           </motion.div>
         )}
       </AnimatePresence>
+      <InstallPrompt />
     </div>
   );
 }

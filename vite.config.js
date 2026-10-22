@@ -30,10 +30,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
-        "favicon.ico",
-        "apple-touch-icon.png",
-        "icon-192.png",
-        "icon-512.png",
+        "quickcart-icon.svg",
       ],
       manifest: {
         name: "QuickCart",
@@ -47,14 +44,14 @@ export default defineConfig({
         scope: "/",
         icons: [
           {
-            src: "icon-192.png",
+            src: "quickcart-icon.svg",
             sizes: "192x192",
-            type: "image/png",
+            type: "image/svg+xml",
           },
           {
-            src: "icon-512.png",
+            src: "quickcart-icon.svg",
             sizes: "512x512",
-            type: "image/png",
+            type: "image/svg+xml",
           },
         ],
       },
