@@ -11,6 +11,7 @@ export interface StoreData {
   address: string;
   phoneNumber: string;
   currency: string;
+  taxRate?: number;
   timezone: string;
   status: 'active' | 'inactive' | 'closed';
   logo?: string | null;

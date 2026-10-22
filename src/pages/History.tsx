@@ -516,14 +516,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, index, onDownload, onViewD
               {/* Order Details */}
               <div className="space-y-2 pt-3 border-t border-outline/10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-secondary font-inter">Subtotal</span>
+                  <span className="text-secondary font-inter">Subtotal (VAT included)</span>
                   <span className="text-on-surface font-inter font-medium">
                     {formatCurrency(subtotal, currency)}
                   </span>
                 </div>
                 {tax > 0 && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-secondary font-inter">Tax</span>
+                    <span className="text-secondary font-inter">VAT included ({(order as any).taxRate ?? 5}%)</span>
                     <span className="text-on-surface font-inter font-medium">
                       {formatCurrency(tax, currency)}
                     </span>

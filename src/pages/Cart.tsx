@@ -40,6 +40,9 @@ interface CartData {
       })[];
       subtotal?: number;
       tax?: number;
+      taxRate?: number;
+      taxExclusiveAmount?: number;
+      discount?: number;
       grandTotal?: number;
     };
   };
@@ -182,13 +185,19 @@ const Cart: React.FC = (): React.ReactElement => {
             <h3 className="text-on-surface font-poppins font-bold text-base mb-5">Order Summary</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-secondary font-inter text-sm">Subtotal</span>
+                <span className="text-secondary font-inter text-sm">Subtotal (VAT included)</span>
                 <span className="text-on-surface font-inter font-semibold text-sm">{formatCurrency(Number(cart?.subtotal || 0), currency)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-secondary font-inter text-sm">Tax (5%)</span>
+                <span className="text-secondary font-inter text-sm">VAT included ({Number(cart?.taxRate ?? 5)}%)</span>
                 <span className="text-on-surface font-inter font-semibold text-sm">{formatCurrency(Number(cart?.tax || 0), currency)}</span>
               </div>
+              {Number(cart?.discount || 0) > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-secondary font-inter text-sm">Discount</span>
+                  <span className="text-on-surface font-inter font-semibold text-sm">-{formatCurrency(Number(cart?.discount || 0), currency)}</span>
+                </div>
+              )}
               <div className="flex justify-between mt-5 pt-5 border-t border-outline/10">
                 <span className="text-on-surface font-poppins font-bold text-lg">Total</span>
                 <span className="text-primary font-poppins font-bold text-lg">{formatCurrency(Number(cart?.grandTotal || 0), currency)}</span>

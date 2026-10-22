@@ -42,18 +42,13 @@ interface StoreProfile {
   postalCode?: string;
   description?: string;
   currency: string;
+  taxRate?: number;
   timezone: string;
   logo?: string | null;
   qrCode?: string | null;
   qrGeneratedAt?: string;
   businessHours?: BusinessHours[];
   status?: 'active' | 'inactive' | 'closed';
-}
-
-interface TaxCategory {
-  category: string;
-  rate: string;
-  exempt: boolean;
 }
 
 interface DayHours {
@@ -82,20 +77,10 @@ const defaultStoreProfile: StoreProfile = {
   postalCode: '',
   description: '',
   currency: 'AED',
+  taxRate: 5,
   timezone: 'UTC',
   businessHours: [],
 };
-
-const defaultTaxCategories: TaxCategory[] = [
-  { category: 'Fresh Produce', rate: '0%', exempt: true },
-  { category: 'Dairy & Eggs', rate: '0%', exempt: true },
-  { category: 'Meat & Seafood', rate: '0%', exempt: true },
-  { category: 'Bakery', rate: '0%', exempt: true },
-  { category: 'Beverages', rate: '8.5%', exempt: false },
-  { category: 'Snacks & Confectionery', rate: '8.5%', exempt: false },
-  { category: 'Alcohol', rate: '10%', exempt: false },
-  { category: 'Tobacco', rate: '15%', exempt: false },
-];
 
 const defaultHours: DayHours[] = days.map(day => ({
   day,
@@ -142,7 +127,7 @@ export function SettingsPage() {
   const invalidateStoreProfile = useInvalidateStoreProfile();
 
   // Tax configuration state
-  const [taxCategories, setTaxCategories] = useState<TaxCategory[]>(defaultTaxCategories);
+  const [taxRate, setTaxRate] = useState('5');
   const [taxSaved, setTaxSaved] = useState(false);
   const [taxSaving, setTaxSaving] = useState(false);
 
@@ -187,10 +172,12 @@ export function SettingsPage() {
         phoneNumber: storeProfile.phoneNumber || '',
         address: storeProfile.address || '',
         currency: normalizeCurrencyCode(storeProfile.currency),
+        taxRate: Number.isFinite(Number(storeProfile.taxRate)) ? Number(storeProfile.taxRate) : 5,
       };
 
       console.log('Initial data to set:', initialData);
       setFormData(initialData);
+      setTaxRate(String(initialData.taxRate));
       setHasChanges(false);
       setLogoPreview(storeProfile.logo || null);
     }
@@ -386,20 +373,32 @@ export function SettingsPage() {
     toast.success('Store link copied to clipboard');
   };
 
-  // Handle tax rate change
-  const handleTaxRateChange = (index: number, value: string) => {
-    setTaxCategories(prev =>
-      prev.map((t, i) => (i === index ? { ...t, rate: value } : t))
-    );
+  // Handle the single global UAE VAT rate.
+  const handleTaxRateChange = (value: string) => {
+    setTaxRate(value);
     setTaxSaved(false);
   };
 
   // Handle tax settings save
   const handleSaveTax = async () => {
+    const parsedRate = Number(taxRate);
+    if (!Number.isFinite(parsedRate) || parsedRate < 0 || parsedRate > 100) {
+      toast.error('Choose a valid VAT rate between 0% and 100%');
+      return;
+    }
+
     setTaxSaving(true);
     try {
-      // TODO: replace with real API call, e.g. await updateTaxConfig(taxCategories);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const savedProfile = await saveStoreProfileAPI({
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
+        address: formData.address,
+        taxRate: parsedRate,
+      });
+      queryClient.setQueryData(['storeProfile'], savedProfile);
+      setFormData(prev => ({ ...prev, taxRate: Number(savedProfile.taxRate ?? parsedRate) }));
+      setTaxRate(String(savedProfile.taxRate ?? parsedRate));
+      invalidateStoreProfile();
       setTaxSaved(true);
       toast.success('Tax settings saved successfully');
       setTimeout(() => setTaxSaved(false), 2000);
@@ -872,24 +871,24 @@ export function SettingsPage() {
             <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-5">
               <div>
                 <h3 className="text-gray-900 text-lg" style={{ fontWeight: 600 }}>Tax Configuration</h3>
-                <p className="text-xs text-gray-500 mt-1">Set tax rates by product category</p>
+                <p className="text-xs text-gray-500 mt-1">Configure the global UAE VAT rate for your store</p>
               </div>
-              <div className="space-y-3">
-                {taxCategories.map((t, index) => (
-                  <div key={t.category} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-b-0">
-                    <div>
-                      <p className="text-sm text-gray-800" style={{ fontWeight: 500 }}>{t.category}</p>
-                      {t.exempt && <p className="text-xs text-green-600">Tax exempt</p>}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <input
-                        value={t.rate}
-                        onChange={(e) => handleTaxRateChange(index, e.target.value)}
-                        className="w-20 px-2 py-1.5 text-sm text-center border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
-                      />
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between py-3">
+                <div>
+                  <p className="text-sm text-gray-800" style={{ fontWeight: 500 }}>UAE VAT rate</p>
+                  <p className="text-xs text-gray-500 mt-1">Prices are VAT-inclusive; VAT is shown separately but not added again.</p>
+                </div>
+                <select
+                  value={taxRate}
+                  onChange={(e) => handleTaxRateChange(e.target.value)}
+                  className="w-24 px-2 py-1.5 text-sm text-center border border-gray-200 rounded-lg outline-none focus:border-green-400 focus:ring-1 focus:ring-green-200 transition"
+                >
+                  <option value="0">0%</option>
+                  <option value="5">5%</option>
+                  <option value="10">10%</option>
+                  <option value="15">15%</option>
+                  <option value="20">20%</option>
+                </select>
               </div>
               <button
                 onClick={handleSaveTax}
